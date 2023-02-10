@@ -1,0 +1,24 @@
+<html lang="cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <script src="./jquery-3.6.3.min.js"></script>
+    <script src="./verifyId.js"></script>
+    <title>身份证校验</title>
+</head>
+<body>
+<label for="id">身份证号: </label><input id="id"/>
+<button id="test">校验</button>
+<br/>
+<label for="result">校验结果: </label>
+<div id="result"></div>
+<script type="text/javascript">
+    $("#id").val("110101190001011009");
+    $("#test").click(() => {
+        let id = $("#id").val();
+        let result = verifyId(id);
+        $("#result").text(JSON.stringify(result));
+    })
+
+</script>
+</body>
+</html>
