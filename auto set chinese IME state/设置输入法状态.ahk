@@ -25,7 +25,7 @@ if (autostart) {
 
 ;----------auto set IME state start-------------
 ; 设置中英文状态的等待时间
-timeInterval := 100
+timeInterval := 500
 ; 现在的输入法状态是否是中文
 nowImeModeIsChinese := true
 ; 根据按键设置中英文状态
