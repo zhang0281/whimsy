@@ -31,7 +31,11 @@ nowImeModeIsChinese := true
 ; 根据按键设置中英文状态
 Shift:: {
     global nowImeModeIsChinese
-    nowImeModeIsChinese := nowImeModeIsChinese ? false : true
+    
+    id := DllCall("imm32\ImmGetDefaultIMEWnd", "Uint", WinGetID("A"), "Uint")
+    if (InChsIme(id)) {
+        nowImeModeIsChinese := nowImeModeIsChinese ? false : true
+    }
 }
 
 ; 获取是否是中文输入法
@@ -77,4 +81,4 @@ outer:
         }
         Sleep(timeInterval)
     }
-    ;----------auto set IME state end-------------
+;----------auto set IME state end-------------
