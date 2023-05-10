@@ -71,6 +71,23 @@ def get_vampire_survivors_folder(steam_folder: str) -> str or None:
     return result
 
 
+def backup_file(file_folder: str, file_name: str):
+    """
+    根据路径和文件名备份指定的文件，并且在已经备份的情况下读取备份完毕的文件
+    :param file_folder: 文件路径
+    :param file_name: 文件名
+    :return: 备份后的文件
+    """
+    file_full_path = os.path.join(file_folder, file_name)
+    file_backup_full_path = os.path.join(file_folder, file_name[:-4] + '_old' + file_name[-4:])
+    file = Image.open(file_full_path)
+    if not os.path.exists(file_backup_full_path):
+        file.save(file_backup_full_path)
+    else:
+        file = Image.open(file_backup_full_path)
+    return file
+
+
 def edit_img_alpha(file_folder: str, file_name: str, alpha: float):
     """
     根据alpha修改指定图片的透明度。
@@ -80,12 +97,8 @@ def edit_img_alpha(file_folder: str, file_name: str, alpha: float):
     :return: None
     """
     file_full_path = os.path.join(file_folder, file_name)
-    file_backup_full_path = os.path.join(file_folder, file_name[:-4] + '_old' + file_name[-4:])
-    img = Image.open(file_full_path)
-    if not os.path.exists(file_backup_full_path):
-        img.save(file_backup_full_path)
-    else:
-        img = Image.open(file_backup_full_path)
+
+    img = backup_file(file_folder, file_name)
 
     img = img.convert('RGBA')
     x, y = img.size
