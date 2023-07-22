@@ -1,0 +1,236 @@
+// 意念之石启动之后,可以持续执行它所收到的指令.
+// 指令必须使用写入石之脚本.
+// 其他信息请见:StoneStoryRPG.com/stonescript.
+// ——贤者贝赛拉
+
+//import Cosmetics/Hats/Skully
+import Cosmetics/PetBoo
+import Fishing
+/** 预设变量
+*/
+var LOW_HP_PERSENT = 0.65
+var MAIN_LO = 2
+var HEAL_LO = 3
+var MAGIC_LO = 4
+var PHY_LO = 1
+
+var needHealToMaxHp = false
+/**
+ * 在屏幕指定位置输出消息
+ * posY:屏幕Y轴坐标
+ * message 需要输出的消息,可以是变量名
+ */
+func Print(posY,message)
+  >`1,@posY@,#rainE1,@message@
+
+/** 岩石高地
+ * 自动铲石头
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ */
+func levelRocky(mainLO,healLO)
+  ?loc = rocky
+    loadout @mainLO@
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+    // 自动铲石头
+    ?harvest = Boulder &
+    ^ harvest.distance < 30
+      equip shovel
+/** 枯木峡谷
+ * 自动砍树
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ * phyLO: 物理伤害Loadout
+ */
+func levelDeadwood(mainLO,healLO,phyLO)
+  ?loc = deadwood
+    loadout @mainLO@
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+    // 魔免怪加载近战
+    ?foe = immune_to_ranged
+      loadout @phyLO@
+    // 自动砍树
+    ?harvest = Tree
+      equip hatchet
+/** 恐怖洞窟
+ * 在打完boss之后补满血
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ */
+func levelCaves(mainLO,healLO)
+  ?loc = caves
+    loadout @mainLO@
+    ?foe = boss
+      loadout 4
+      needHealToMaxHp = true
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+    ?needHealToMaxHp = true & 
+    ^hp <= maxhp &
+    ^foe ! boss
+      loadout @healLO@
+      ?hp = maxhp
+        needHealToMaxHp = false
+    ?foe = tiny_spider
+      loadout 4
+/** 蘑菇森林
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ */
+func levelForest(mainLO,healLO)
+  ?loc = forest
+    loadout @mainLO@
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+/** 亡者之殿
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ * magicLO: 魔法伤害Loadout
+ */
+func levelHalls(mainLO,healLO,magicLO)
+  ?loc = halls
+    loadout @mainLO@
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+    ?foe = immune_to_physical
+      loadout @magicLO@
+/** 灼热矿井
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ */
+func levelMine(mainLO,healLO)
+  ?loc = mine
+    loadout @mainLO@
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+    ?foe = fluff & foe.distance = 5
+      equipL mind stone
+/** 不融山
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ */
+func levelIcy(mainLO,healLO)
+  ?loc = icy
+    loadout @mainLO@
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+/** 神庙
+ * mainLO: 主Loadout
+ * healLO: 治疗Loadout
+ * magicLO: 魔法伤害Loadout
+ */
+func levelTemple(mainLO,healLO,magicLO)
+  ?loc = temple
+    loadout @mainLO@
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+      // 魔免怪加载近战
+      ?foe = immune_to_Vigor
+        loadout @magicLO@
+      ?foe = flying_serpent
+        loadout 4
+/** 使用骷髅手臂
+ * 在骷髅手臂可用,
+ * 可以使用技能秒杀怪物
+ * 非物理免疫,非boss
+ * 不会干扰加速跑和自动捡取时
+ * 装备并且使用骷髅手臂
+ */
+func steal()
+  ?item.GetCooldown(＂skeleton_arm＂) <= 0 & 
+  ^foe.hp < 25 &
+  ^foe ! immune_to_physical & 
+  ^foe.armor <= 0 &
+  ^foe ! boss &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20
+    equip skeleton arm
+    ?item.CanActivate(＂skeleton_arm＂)
+       activate R
+       >o-2,-3,#ffcccc,shhhh!~
+/** 自动拾取
+ * 距离可拾取物品足够近的时候
+ * 自动拾取物品
+ */
+func autoPickup()
+  ?pickup & pickup.distance < 10
+    equipL star_stone
+    equipR shield ah
+/** 血量小于7喝药
+ */
+func autoPotion()
+  ?hp <= maxhp*0.3
+    activate potion
+/** 加速
+ * 在离怪物,可拾取物,可收获物
+ * 足够远的时候装备三曲腿加速跑
+ */
+func runFast()
+  ?foe.distance >= 20 &
+  ^ pickup.distance >= 20 &
+  ^ harvest.distance >= 20
+    equipL triskelion fuse
+    equipR shield ah
+/** 显示自定义变量的值
+ *
+ */
+func showInfo()
+  >c-42,11,Heal@maxhp * LOW_HP_PERSENT@:
+  ^@hp <= maxhp * LOW_HP_PERSENT@
+  ?loc = caves
+    >c-42,10,NeedHealToMaxHp:
+    ^@needHealToMaxHp@
+/** 拆分字符串
+ * 当信息超出一行的时候拆分成两行显示
+ */
+func breakString(posY,s,atS)
+  ?s
+    var a = string.Break(s, 60)
+    for i = 0 .. a.Count()-1
+      >`1,@posY+i@,#rainE1,@atS@@i+1@:@a［i］@
+      //Print(posY+i, a［i］)
+/** 显示宝箱位置
+ * 
+ */
+func freeChest()
+  ?loc = undead_crypt_intro
+    var freeChest = import UI/FreeChestTracker
+    freeChest.Main()
+/** 执行对应关卡的策略
+ */
+levelRocky(MAIN_LO,HEAL_LO)
+levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
+levelCaves(MAIN_LO,HEAL_LO)
+levelForest(MAIN_LO,HEAL_LO)
+levelHalls(MAIN_LO,HEAL_LO,MAGIC_LO)
+levelMine(MAIN_LO,HEAL_LO)
+levelIcy(MAIN_LO,HEAL_LO)
+levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
+/** 其他功能
+*/
+autoPickup()
+steal()
+autoPotion()
+runFast()
+freeChest()
+
+showInfo()
+
+breakString(5,loc,@loc)
+breakString(7,foe,@foe)
+/** 测试代码区域
+*/
+// 显示Level Info
+//Print(1,loc)
+
+// 显示Level是否是rocky
+//Print(2,loc=forest)
+
+// 显示目标
+//Print(3,harvest)
+//Print(4,pickup)
+
+//>`0,1,Left ID:@item.left.id@
+//>`,0,2,Right ID:@item.right.id@
