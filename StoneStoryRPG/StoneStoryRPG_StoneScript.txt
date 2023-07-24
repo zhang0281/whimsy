@@ -2,15 +2,14 @@
 // 指令必须使用写入石之脚本.
 // 其他信息请见:StoneStoryRPG.com/stonescript.
 // ——贤者贝赛拉
-?loc.begin
-  //import Cosmetics/Hats/Skully
-  import Cosmetics/PetBoo
-  import Fishing
-  import UI/BetterInfo2
+//import Cosmetics/Hats/Skully
+import Cosmetics/PetBoo
+import Fishing
+import UI/BetterInfo2
 
 /** 预设变量
 **/
-?loc.loop
+?loc.begin
   var MAIN_LO = 2
   var HEAL_LO = 3
   var MAGIC_LO = 4
@@ -247,7 +246,9 @@ func bladeMission400kDMG()
       ^ foe ! immune_to_ranged
       equipL wand poison
       equipR shield ah
-    :?string.IndexOf(
+    :?^string.IndexOf(
+      ^debuffStr,＂debuff_chill＂) = -1&
+      string.IndexOf(
       ^debuffStr,＂debuff_chill:6＂) = -1&
       ^ foe ! immune_to_debuff_damage &
       ^ foe ! immune_to_ranged
