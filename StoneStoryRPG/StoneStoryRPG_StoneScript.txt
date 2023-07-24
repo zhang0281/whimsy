@@ -199,7 +199,8 @@ func bladeMission()
 func useBlade()
   ?item.GetCooldown(＂blade＂) <= 0 &
   ^pickup.distance >= 20 &
-  ^harvest.distance >= 20
+  ^harvest.distance >= 20 &
+  ^(foe.armor + foe.hp) < 190
     equip blade
     ?item.CanActivate(＂blade＂)
       activate R
