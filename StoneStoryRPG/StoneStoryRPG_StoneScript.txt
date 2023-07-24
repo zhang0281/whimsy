@@ -2,16 +2,23 @@
 // 指令必须使用写入石之脚本.
 // 其他信息请见:StoneStoryRPG.com/stonescript.
 // ——贤者贝赛拉
+?loc.begin
+  //import Cosmetics/Hats/Skully
+  import Cosmetics/PetBoo
+  import Fishing
+  import UI/BetterInfo2
 
 /** 预设变量
 **/
-var LOW_HP_PERSENT = 0.65
-var MAIN_LO = 2
-var HEAL_LO = 3
-var MAGIC_LO = 4
-var PHY_LO = 1
+?loc.loop
+  var MAIN_LO = 2
+  var HEAL_LO = 3
+  var MAGIC_LO = 4
+  var PHY_LO = 1
 
-var needHealToMaxHp = false
+  var LOW_HP_PERSENT = 0.65
+  var needHealToMaxHp = false
+
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
  *  message 需要输出的消息,可以是变量名
@@ -231,25 +238,29 @@ func bladeMission35kill()
 **/
 func bladeMission400kDMG()
   ?foe
-    >`0,2,foe.count:@foe.count@
-    // breakString(3,foe.debuffs.string,＂debuffs＂)
+    var debuffStr = foe.debuffs.string
+    // >`0,2,foe.count:@foe.count@
+    // breakString(3,debuffStr,＂debuffs＂)
     ?string.IndexOf(
-      ^foe.debuffs.string,＂debuff_damage:1＂) = -1&
-      ^ foe ! immune_to_debuff_damage
+      ^debuffStr,＂debuff_damage:1＂) = -1&
+      ^ foe ! immune_to_debuff_damage &
+      ^ foe ! immune_to_ranged
       equipL wand poison
       equipR shield ah
     :?string.IndexOf(
-      ^foe.debuffs.string,＂debuff_chill:6＂) = -1&
-      ^ foe ! immune_to_debuff_damage
+      ^debuffStr,＂debuff_chill:6＂) = -1&
+      ^ foe ! immune_to_debuff_damage &
+      ^ foe ! immune_to_ranged
       equipL wand ice
       equipR shield ah
     :?string.IndexOf(
-      ^foe.debuffs.string,＂debuff_dot:1＂) = -1&
-      ^ foe ! immune_to_debuff_damage
+      ^debuffStr,＂debuff_dot:1＂) = -1&
+      ^ foe ! immune_to_debuff_damage &
+      ^ foe ! immune_to_ranged
       equipL wand fire
       equipR shield ah
     :?string.IndexOf(
-      ^foe.debuffs.string,＂stun:1＂) = -1 &
+      ^debuffStr,＂stun:1＂) = -1 &
       ^ foe ! immune_to_debuff_damage &
       ^ foe ! immune_to_stun
       equipL hammer *max +21
@@ -275,13 +286,30 @@ func bladeMission400kDMG()
 **/
 func useBlade()
   ?item.GetCooldown(＂blade＂) <= 0 &
+  ^foe.count > 5 &
+  ^foe.distance <= 20 &
   ^pickup.distance >= 20 &
   ^harvest.distance >= 20 &
   ^(foe.armor + foe.hp) < 190
     equip blade
     ?item.CanActivate(＂blade＂)
       activate R
-      >o-2,-3,#ffcccc,使用技能
+      >o-2,-3,#ffcccc,使用剑
+      return true
+  return false
+
+/** 使用面具的主动能力
+**/
+func useMask()
+  ?item.GetCooldown(＂mask＂) <= 0 &
+  ^foe.count > 0 &
+  ^foe.distance <= 20 &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20 
+    equip mask
+    ?item.CanActivate(＂mask＂)
+      activate R
+      >o-2,-3,#ffcccc,使用面具
       return true
   return false
 /** 自动拾取
@@ -319,8 +347,9 @@ func showInfo()
 **/
 func freeChest()
   ?loc = undead_crypt_intro
-    var freeChest = import UI/FreeChestTracker
-    freeChest.Main()
+    var freeChestTracker = 
+    ^import UI/FreeChestTracker
+    freeChestTracker.Main()
 /** 执行对应关卡的策略
 **/
 levelRocky(MAIN_LO,HEAL_LO)
@@ -335,6 +364,9 @@ levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
 **/
 autoPickup()
 steal()
+
+useMask()
+
 //bladeMission35kill()
 //addRstBtn()
 bladeMission400kDMG()
@@ -345,7 +377,7 @@ freeChest()
 
 showInfo()
 
-breakString(6,loc,loc.name)
-breakString(8,foe,foe.name)
+//breakString(6,loc,loc.name)
+//breakString(8,foe,foe.name)
 
 /** 完毕 ***/

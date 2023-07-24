@@ -5,6 +5,7 @@
       <ID>1</ID>
       <Description>"药水信息（通过 药水/炼药 进行更新）"</Description>
       <Options moHideChildren="1"/>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>{$Lua}
 LaunchMonoDataCollector()
@@ -134,6 +135,7 @@ dealloc(newmem)
     <CheatEntry>
       <ID>8</ID>
       <Description>"增益效果无限持续，减益效果立即失效"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>{$Lua}
 LaunchMonoDataCollector()
@@ -176,6 +178,7 @@ dealloc(newmem)
     <CheatEntry>
       <ID>13</ID>
       <Description>"无限资源（通过 获取/使用 更新）"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>{$Lua}
 LaunchMonoDataCollector()
@@ -212,6 +215,7 @@ dealloc(newmem)
       <ID>17</ID>
       <Description>"铁砧(强化台) 信息"</Description>
       <Options moHideChildren="1"/>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>{$Lua}
 LaunchMonoDataCollector()
@@ -262,6 +266,7 @@ dealloc(newmem)
           <ID>14</ID>
           <Description>"铁砧第二槽最大数量限制"</Description>
           <Options moHideChildren="1"/>
+          <LastState/>
           <VariableType>Auto Assembler Script</VariableType>
           <AssemblerScript>{$Lua}
 LaunchMonoDataCollector()
@@ -302,11 +307,13 @@ dealloc(newmem)
             <CheatEntry>
               <ID>19</ID>
               <Description>"2^&lt;desired level&gt;=&lt;item amount&gt;, Max Level is 10"</Description>
+              <LastState Value="" RealAddress="00000000"/>
               <GroupHeader>1</GroupHeader>
             </CheatEntry>
             <CheatEntry>
               <ID>26</ID>
               <Description>"Max Item Count is 2^10-1 = 1023"</Description>
+              <LastState Value="" RealAddress="00000000"/>
               <GroupHeader>1</GroupHeader>
             </CheatEntry>
             <CheatEntry>
@@ -318,6 +325,12 @@ dealloc(newmem)
           </CheatEntries>
         </CheatEntry>
       </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>28</ID>
+      <Description>"强化所需道具数量：4168个，8335个"</Description>
+      <LastState Value="" RealAddress="00000000"/>
+      <GroupHeader>1</GroupHeader>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>
