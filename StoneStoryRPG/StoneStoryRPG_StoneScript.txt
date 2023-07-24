@@ -121,7 +121,6 @@ func levelMine(mainLO,healLO)
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
-    >`0,1,@foe = fluff & foe.distance <= 5@
     ?(foe = fluff | foe = explode) & foe.distance <= 5
       equipL mind stone
 /** 不融山
