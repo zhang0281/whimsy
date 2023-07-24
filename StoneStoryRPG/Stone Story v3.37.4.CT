@@ -328,7 +328,7 @@ dealloc(newmem)
     </CheatEntry>
     <CheatEntry>
       <ID>28</ID>
-      <Description>"强化所需道具数量：4168个，8335个"</Description>
+      <Description>"强化所需道具数量：4168个，8335个，12501个"</Description>
       <LastState Value="" RealAddress="00000000"/>
       <GroupHeader>1</GroupHeader>
     </CheatEntry>

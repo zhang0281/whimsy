@@ -121,7 +121,8 @@ func levelMine(mainLO,healLO)
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
-    ?foe = fluff & foe.distance = 5
+    >`0,1,@foe = fluff & foe.distance <= 5@
+    ?(foe = fluff | foe = explode) & foe.distance <= 5
       equipL mind stone
 /** 不融山
  *  mainLO: 主Loadout
@@ -250,20 +251,20 @@ func bladeMission400kDMG()
       ^debuffStr,＂debuff_chill＂) = -1&
       ^string.IndexOf(
       ^debuffStr,＂debuff_chill:6＂) = -1&
-      ^ foe ! immune_to_debuff_damage &
+      ^ foe ! immune_to_debuff_chill &
       ^ foe ! immune_to_ranged
       equipL wand ice
       equipR shield ah
     :?string.IndexOf(
       ^debuffStr,＂debuff_dot:1＂) = -1&
-      ^ foe ! immune_to_debuff_damage &
+      ^ foe ! immune_to_debuff_dot &
       ^ foe ! immune_to_ranged
       equipL wand fire
       equipR shield ah
     :?string.IndexOf(
       ^debuffStr,＂stun:1＂) = -1 &
-      ^ foe ! immune_to_debuff_damage &
-      ^ foe ! immune_to_stun
+      ^ foe ! immune_to_stun &
+      ^ loc ! mine & foe ! explode
       equipL hammer *max +21
       equipR shield ah
     // ?foe.debuffs.string
@@ -314,7 +315,7 @@ func autoPotion()
  *  足够远的时候装备三曲腿加速跑
 **/
 func runFast()
-  ?foe.distance >= 20 &
+  ?foe.distance > 20 &
   ^ pickup.distance >= 20 &
   ^ harvest.distance >= 20
     equipL triskelion fuse
