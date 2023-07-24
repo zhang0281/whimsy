@@ -248,7 +248,7 @@ func bladeMission400kDMG()
       equipR shield ah
     :?^string.IndexOf(
       ^debuffStr,＂debuff_chill＂) = -1&
-      string.IndexOf(
+      ^string.IndexOf(
       ^debuffStr,＂debuff_chill:6＂) = -1&
       ^ foe ! immune_to_debuff_damage &
       ^ foe ! immune_to_ranged
