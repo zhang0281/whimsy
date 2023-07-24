@@ -76,7 +76,7 @@ func levelCaves(mainLO,healLO)
       loadout 4
       needHealToMaxHp = true
     ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healL  O@
+      loadout @healLO@
     ?needHealToMaxHp = true & 
     ^hp <= maxhp &
     ^foe ! boss
@@ -152,9 +152,8 @@ func levelTemple(mainLO,healLO,magicLO)
  */
 func steal()
   ?item.GetCooldown(＂skeleton_arm＂) <= 0 & 
-  ^foe.hp < 25 &
+  ^(foe.hp + foe.armor) < 20 &
   ^foe ! immune_to_physical & 
-  ^foe.armor <= 0 &
   ^foe ! boss &
   ^pickup.distance >= 20 &
   ^harvest.distance >= 20
@@ -166,21 +165,30 @@ func steal()
  *  ＂blade_used_monsters＂
  */
 func OnRstBtnPressed()
-  storage.Delete(＂blade_used_monsters＂)
+  var monsArr = 
+  ^string.Split(
+  ^storage.Get(＂blade_used_monsters＂))
+  monsArr.RemoveAt(monsArr.IndexOf(＂青铜守卫＂))
+  monsArr.RemoveAt(monsArr.IndexOf(＂火元素＂))
+
+  storage.Set(＂blade_used_monsters＂, 
+  ^string.Join(＂ ＂, monsArr))
+
+  //storage.Delete(＂blade_used_monsters＂)
 /** 添加重置按钮
  */
 func addRstBtn()
   ?loc.begin
     var rstBtn = ui.AddButton()
     rstBtn.y = 1
-    rstBtn.text = 重置blade_used_monsters
+    rstBtn.text = 删除指定元素
     rstBtn.SetPressed(OnRstBtnPressed)
 /** 自动统计被堕神之剑的主动能力杀死的敌人
  *  用于完成 击败35类敌人 的任务
  *  由于无法获取全部敌人信息
  *  只能多次执行
  */
-func bladeMission()
+func bladeMission35kill()
   var monsArr
   var foeName
   monsArr = ［］
@@ -191,7 +199,7 @@ func bladeMission()
     ?storage.Has(＂blade_used_monsters＂)
       monsArr = 
       ^string.Split(
-      ^storage.Get(＂blade_used_monsters＂))
+      ^storage.Get(＂blade_used_monsters＂),true)
       ? ! monsArr.Contains(foeName)
         ?useBlade() = true
           monsArr.Add(foeName)
@@ -202,10 +210,66 @@ func bladeMission()
       storage.Set(＂blade_used_monsters＂, 
       ^string.Join(＂ ＂, monsArr))
     
-  breakString(9,foe.name,@nowMon)
-  breakString(10,
-  ^storage.Get(＂blade_used_monsters＂)
-  ^,@monsArr)
+  breakString(10,foe.name,@nowMon)
+  breakString(11,
+  ^storage.Get(＂blade_used_monsters＂),
+  ^＂monsNum＂ + string.Split(
+  ^storage.Get(＂blade_used_monsters＂)).Count()
+  ^ + ＂/35＂)
+/** 完成400000重击伤害任务
+ *  ∞❄
+ *  ♥*φ
+ *  1) poison (attack with any weapon or defensive with hammer)
+ *  2) fire (attack with any weapon)
+ *  3) fire2 (defensive with hammer)
+ *  4) ice (offensive with any weapon or defensive with hammer)
+ *  5) stun (offensive with hammer or hook)
+ *  6) feeble (mask active ability)
+ *  1)毒药(用任何武器攻击或用锤子防御)   √
+ *  2)火(使用任何武器攻击)              √
+ *  3) fire2 (用锤子防御)
+ *  4)冰(使用任何武器进攻或使用锤子防御) √
+ *  5) 击晕(用锤子或钩子攻击)            √
+ *  6) 微弱(面具主动能力)
+ */
+func bladeMission40kDMG()
+  ?foe
+    >`0,2,foe.count:@foe.count@
+    // breakString(3,foe.debuffs.string,＂debuffs＂)
+    ?string.IndexOf(
+      ^foe.debuffs.string,＂debuff_damage:1＂) = -1&
+      ^ foe ! immune_to_debuff_damage
+      equipL wand poison
+    :?string.IndexOf(
+      ^foe.debuffs.string,＂debuff_chill:6＂) = -1&
+      ^ foe ! immune_to_debuff_damage
+      equipL wand ice
+    :?string.IndexOf(
+      ^foe.debuffs.string,＂debuff_dot:1＂) = -1&
+      ^ foe ! immune_to_debuff_damage
+      equipL wand fire
+    :?string.IndexOf(
+      ^foe.debuffs.string,＂stun:1＂) = -1 &
+      ^ foe ! immune_to_debuff_damage &
+      ^ foe ! immune_to_stun
+      equipL hammer *max +21
+    ?foe.debuffs.string
+      var debuffsArr = 
+      ^string.Split(foe.debuffs.string,＂,＂,true)
+      for i = 0 .. debuffsArr.Count()-1
+        var debuffArr = 
+        ^string.Split(debuffsArr［i］,＂:＂,true)
+        var e = debuffArr［0］
+        var eName = debuffArr［1］
+        var eLevel = debuffArr［2］
+        var eTime = debuffArr［3］
+        breakString(10+i,eLevel + ＂ ＂ + eTime,eName)
+        // >`@i*23+1@,1,#ffc57f,＂element＂:@e@
+        // >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
+        // >`@i*23+1@,3,#ffc57f,＂eLevel＂:@eLevel@
+        // >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
+
+
 /** 使用堕神大剑的主动能力
  */
 func useBlade()
@@ -270,7 +334,9 @@ levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
 */
 autoPickup()
 steal()
-bladeMission()
+// bladeMission35kill()
+bladeMission40kDMG()
+useBlade()
 autoPotion()
 runFast()
 freeChest()
@@ -278,8 +344,8 @@ freeChest()
 showInfo()
 //addRstBtn()
 
-breakString(5,loc,loc.name)
-breakString(7,foe,foe.name)
+breakString(6,loc,loc.name)
+breakString(8,foe,foe.name)
 
 /** 测试代码区域
 */
