@@ -240,13 +240,13 @@ func bladeMission400kDMG()
     var debuffStr = foe.debuffs.string
     // >`0,2,foe.count:@foe.count@
     // breakString(3,debuffStr,＂debuffs＂)
-    ?string.IndexOf(
-      ^debuffStr,＂debuff_damage:1＂) = -1&
+    ?string.IndexOf(debuffStr,
+      ^＂debuff_damage:1＂) = -1&
       ^ foe ! immune_to_debuff_damage &
       ^ foe ! immune_to_ranged
       equipL wand poison
       equipR shield ah
-    :?^string.IndexOf(
+    :?string.IndexOf(
       ^debuffStr,＂debuff_chill＂) = -1&
       ^string.IndexOf(
       ^debuffStr,＂debuff_chill:6＂) = -1&
