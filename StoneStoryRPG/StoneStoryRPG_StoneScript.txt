@@ -2,13 +2,13 @@
 // 指令必须使用写入石之脚本.
 // 其他信息请见:StoneStoryRPG.com/stonescript.
 // ——贤者贝赛拉
+
 //import Cosmetics/Hats/Skully
 import Cosmetics/PetBoo
 import Fishing
 import UI/BetterInfo2
 
-/** 预设变量
-**/
+/** 预设变量 **/
 ?loc.begin
   var MAIN_LO = 2
   var HEAL_LO = 3
@@ -36,6 +36,7 @@ func breakString(posY,s,atS)
       for i = 0 .. a.Count()-1
         >`1,@posY+i@,#ffc57f,@atS@_@i+1@:@a［i］@
         //Print(posY+i, a［i］)
+
 /** 岩石高地
  *  自动铲石头
  *  mainLO: 主Loadout
@@ -165,7 +166,7 @@ func steal()
        activate R
        >o-2,-3,#ffcccc,shhhh!~
 /** 点击重置按钮之后重置
- *  ＂blade_used_monsters＂
+ *  blade_used_monsters
 **/
 func OnRstBtnPressed()
   var monsArr = 
@@ -176,16 +177,30 @@ func OnRstBtnPressed()
 
   storage.Set(＂blade_used_monsters＂, 
   ^string.Join(＂ ＂, monsArr))
-
   //storage.Delete(＂blade_used_monsters＂)
-/** 添加重置按钮
-**/
+
+/** 添加重置按钮 **/
 func addRstBtn()
   ?loc.begin
     var rstBtn = ui.AddButton()
     rstBtn.y = 1
     rstBtn.text = 删除指定元素
     rstBtn.SetPressed(OnRstBtnPressed)
+/** 使用堕神大剑的主动能力 **/
+func useBlade()
+  ?item.GetCooldown(＂blade＂) <= 0 &
+  ^foe.count > 5 &
+  ^foe.distance <= 20 &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20 &
+  ^(foe.armor + foe.hp) < 190
+    equip blade
+    ?item.CanActivate(＂blade＂)
+      activate R
+      >o-2,-3,#ffcccc,使用剑
+      return true
+  return false
+
 /** 自动统计被堕神之剑的主动能力杀死的敌人
  *  用于完成 击败35类敌人 的任务
  *  由于无法获取全部敌人信息
@@ -219,22 +234,7 @@ func bladeMission35kill()
   ^＂monsNum＂ + string.Split(
   ^storage.Get(＂blade_used_monsters＂)).Count()
   ^ + ＂/35＂)
-/** 完成400000重击伤害任务
- *  ∞❄
- *  ♥*φ
- *  1) poison (attack with any weapon or defensive with hammer)
- *  2) fire (attack with any weapon)
- *  3) fire2 (defensive with hammer)
- *  4) ice (offensive with any weapon or defensive with hammer)
- *  5) stun (offensive with hammer or hook)
- *  6) feeble (mask active ability)
- *  1)毒药(用任何武器攻击或用锤子防御)   √
- *  2)火(使用任何武器攻击)              √
- *  3) fire2 (用锤子防御)
- *  4)冰(使用任何武器进攻或使用锤子防御) √
- *  5) 击晕(用锤子或钩子攻击)            √
- *  6) 微弱(面具主动能力)
-**/
+/** 完成400000重击伤害任务 **/
 func bladeMission400kDMG()
   ?foe
     var debuffStr = foe.debuffs.string
@@ -283,24 +283,7 @@ func bladeMission400kDMG()
     //     >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
 
 
-/** 使用堕神大剑的主动能力
-**/
-func useBlade()
-  ?item.GetCooldown(＂blade＂) <= 0 &
-  ^foe.count > 5 &
-  ^foe.distance <= 20 &
-  ^pickup.distance >= 20 &
-  ^harvest.distance >= 20 &
-  ^(foe.armor + foe.hp) < 190
-    equip blade
-    ?item.CanActivate(＂blade＂)
-      activate R
-      >o-2,-3,#ffcccc,使用剑
-      return true
-  return false
-
-/** 使用面具的主动能力
-**/
+/** 使用面具的主动能力 **/
 func useMask()
   ?item.GetCooldown(＂mask＂) <= 0 &
   ^foe.count > 0 &
@@ -321,8 +304,7 @@ func autoPickup()
   ?pickup & pickup.distance < 10
     equipL star_stone
     equipR shield ah
-/** 血量小于7喝药
-**/
+/** 血量小于7喝药 **/
 func autoPotion()
   ?hp <= maxhp*0.3
     activate potion
@@ -336,23 +318,20 @@ func runFast()
   ^ harvest.distance >= 20
     equipL triskelion fuse
     equipR shield ah
-/** 显示自定义变量的值
-**/
+/** 显示自定义变量的值 **/
 func showInfo()
   >c-42,11,Heal@maxhp * LOW_HP_PERSENT@:
   ^@hp <= maxhp * LOW_HP_PERSENT@
   ?loc = caves
     >c-42,10,NeedHealToMaxHp:
     ^@needHealToMaxHp@
-/** 显示宝箱位置
-**/
+/** 显示宝箱位置 **/
 func freeChest()
   ?loc = undead_crypt_intro
     var freeChestTracker = 
     ^import UI/FreeChestTracker
     freeChestTracker.Main()
-/** 执行对应关卡的策略
-**/
+/** 执行对应关卡的策略 **/
 levelRocky(MAIN_LO,HEAL_LO)
 levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
 levelCaves(MAIN_LO,HEAL_LO)
@@ -363,22 +342,27 @@ levelIcy(MAIN_LO,HEAL_LO)
 levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
 /** 其他功能
 **/
+// 自动拾取
 autoPickup()
+// 偷取道具
 steal()
-
-useMask()
-
+// 堕神大剑相关
+useBlade()
 //bladeMission35kill()
 //addRstBtn()
 bladeMission400kDMG()
-useBlade()
+// 使用面具
+useMask()
+// 低血量回血
 autoPotion()
+// 加速跑
 runFast()
+// 宝箱小游戏提示
 freeChest()
-
+// 显示对应的提示信息
 showInfo()
 
 //breakString(6,loc,loc.name)
 //breakString(8,foe,foe.name)
 
-/** 完毕 ***/
+/** 完毕 **/
