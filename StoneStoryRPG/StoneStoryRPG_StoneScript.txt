@@ -158,11 +158,12 @@ func OnRstBtnPressed()
   storage.Delete(＂blade_used_monsters＂)
 /** 添加重置按钮
  */
-?loc.begin
-  var rstBtn = ui.AddButton()
-  rstBtn.y = 1
-  rstBtn.text = 重置blade_used_monsters
-  rstBtn.SetPressed(OnRstBtnPressed)
+func addRstBtn()
+  ?loc.begin
+    var rstBtn = ui.AddButton()
+    rstBtn.y = 1
+    rstBtn.text = 重置blade_used_monsters
+    rstBtn.SetPressed(OnRstBtnPressed)
 /** 自动统计被堕神之剑的主动能力杀死的敌人
  *  用于完成 击败35类敌人 的任务
  *  由于无法获取全部敌人信息
@@ -274,6 +275,7 @@ runFast()
 freeChest()
 
 showInfo()
+//addRstBtn()
 
 breakString(5,loc,@loc)
 breakString(7,foe,@foe)
