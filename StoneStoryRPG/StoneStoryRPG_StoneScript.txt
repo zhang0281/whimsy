@@ -3,11 +3,8 @@
 // 其他信息请见:StoneStoryRPG.com/stonescript.
 // ——贤者贝赛拉
 
-//import Cosmetics/Hats/Skully
-import Cosmetics/PetBoo
-import Fishing
 /** 预设变量
-*/
+**/
 var LOW_HP_PERSENT = 0.65
 var MAIN_LO = 2
 var HEAL_LO = 3
@@ -18,12 +15,12 @@ var needHealToMaxHp = false
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
  *  message 需要输出的消息,可以是变量名
- */
+**/
 func Print(posY,message)
   >`1,@posY@,#ffc57f,@message@
 /** 拆分字符串
  *  当信息超出一行的时候拆分成两行显示
- */
+**/
 func breakString(posY,s,atS)
   ?s
     var a = string.Break(s, 60)
@@ -37,7 +34,7 @@ func breakString(posY,s,atS)
  *  自动铲石头
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
- */
+**/
 func levelRocky(mainLO,healLO)
   ?loc = rocky
     loadout @mainLO@
@@ -52,7 +49,7 @@ func levelRocky(mainLO,healLO)
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
  *  phyLO: 物理伤害Loadout
- */
+**/
 func levelDeadwood(mainLO,healLO,phyLO)
   ?loc = deadwood
     loadout @mainLO@
@@ -68,12 +65,12 @@ func levelDeadwood(mainLO,healLO,phyLO)
  *  在打完boss之后补满血
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
- */
+**/
 func levelCaves(mainLO,healLO)
   ?loc = caves
     loadout @mainLO@
     ?foe = boss
-      loadout 4
+      // loadout 4
       needHealToMaxHp = true
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
@@ -88,7 +85,7 @@ func levelCaves(mainLO,healLO)
 /** 蘑菇森林
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
- */
+**/
 func levelForest(mainLO,healLO)
   ?loc = forest
     loadout @mainLO@
@@ -100,7 +97,7 @@ func levelForest(mainLO,healLO)
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
  *  magicLO: 魔法伤害Loadout
- */
+**/
 func levelHalls(mainLO,healLO,magicLO)
   ?loc = halls
     loadout @mainLO@
@@ -111,7 +108,7 @@ func levelHalls(mainLO,healLO,magicLO)
 /** 灼热矿井
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
- */
+**/
 func levelMine(mainLO,healLO)
   ?loc = mine
     loadout @mainLO@
@@ -122,7 +119,7 @@ func levelMine(mainLO,healLO)
 /** 不融山
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
- */
+**/
 func levelIcy(mainLO,healLO)
   ?loc = icy
     loadout @mainLO@
@@ -132,7 +129,7 @@ func levelIcy(mainLO,healLO)
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
  *  magicLO: 魔法伤害Loadout
- */
+**/
 func levelTemple(mainLO,healLO,magicLO)
   ?loc = temple
     loadout @mainLO@
@@ -149,7 +146,7 @@ func levelTemple(mainLO,healLO,magicLO)
  *  非物理免疫,非boss
  *  不会干扰加速跑和自动捡取时
  *  装备并且使用骷髅手臂
- */
+**/
 func steal()
   ?item.GetCooldown(＂skeleton_arm＂) <= 0 & 
   ^(foe.hp + foe.armor) < 20 &
@@ -163,7 +160,7 @@ func steal()
        >o-2,-3,#ffcccc,shhhh!~
 /** 点击重置按钮之后重置
  *  ＂blade_used_monsters＂
- */
+**/
 func OnRstBtnPressed()
   var monsArr = 
   ^string.Split(
@@ -176,7 +173,7 @@ func OnRstBtnPressed()
 
   //storage.Delete(＂blade_used_monsters＂)
 /** 添加重置按钮
- */
+**/
 func addRstBtn()
   ?loc.begin
     var rstBtn = ui.AddButton()
@@ -187,7 +184,7 @@ func addRstBtn()
  *  用于完成 击败35类敌人 的任务
  *  由于无法获取全部敌人信息
  *  只能多次执行
- */
+**/
 func bladeMission35kill()
   var monsArr
   var foeName
@@ -231,8 +228,8 @@ func bladeMission35kill()
  *  4)冰(使用任何武器进攻或使用锤子防御) √
  *  5) 击晕(用锤子或钩子攻击)            √
  *  6) 微弱(面具主动能力)
- */
-func bladeMission40kDMG()
+**/
+func bladeMission400kDMG()
   ?foe
     >`0,2,foe.count:@foe.count@
     // breakString(3,foe.debuffs.string,＂debuffs＂)
@@ -240,38 +237,42 @@ func bladeMission40kDMG()
       ^foe.debuffs.string,＂debuff_damage:1＂) = -1&
       ^ foe ! immune_to_debuff_damage
       equipL wand poison
+      equipR shield ah
     :?string.IndexOf(
       ^foe.debuffs.string,＂debuff_chill:6＂) = -1&
       ^ foe ! immune_to_debuff_damage
       equipL wand ice
+      equipR shield ah
     :?string.IndexOf(
       ^foe.debuffs.string,＂debuff_dot:1＂) = -1&
       ^ foe ! immune_to_debuff_damage
       equipL wand fire
+      equipR shield ah
     :?string.IndexOf(
       ^foe.debuffs.string,＂stun:1＂) = -1 &
       ^ foe ! immune_to_debuff_damage &
       ^ foe ! immune_to_stun
       equipL hammer *max +21
-    ?foe.debuffs.string
-      var debuffsArr = 
-      ^string.Split(foe.debuffs.string,＂,＂,true)
-      for i = 0 .. debuffsArr.Count()-1
-        var debuffArr = 
-        ^string.Split(debuffsArr［i］,＂:＂,true)
-        var e = debuffArr［0］
-        var eName = debuffArr［1］
-        var eLevel = debuffArr［2］
-        var eTime = debuffArr［3］
-        breakString(10+i,eLevel + ＂ ＂ + eTime,eName)
-        // >`@i*23+1@,1,#ffc57f,＂element＂:@e@
-        // >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
-        // >`@i*23+1@,3,#ffc57f,＂eLevel＂:@eLevel@
-        // >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
+      equipR shield ah
+    // ?foe.debuffs.string
+    //   var debuffsArr = 
+    //   ^string.Split(foe.debuffs.string,＂,＂,true)
+    //   for i = 0 .. debuffsArr.Count()-1
+    //     var debuffArr = 
+    //     ^string.Split(debuffsArr［i］,＂:＂,true)
+    //     var e = debuffArr［0］
+    //     var eName = debuffArr［1］
+    //     var eLevel = debuffArr［2］
+    //     var eTime = debuffArr［3］
+    //     breakString(10+i,eLevel + ＂ ＂ + eTime,eName)
+    //     >`@i*23+1@,1,#ffc57f,＂element＂:@e@
+    //     >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
+    //     >`@i*23+1@,3,#ffc57f,＂eLevel＂:@eLevel@
+    //     >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
 
 
 /** 使用堕神大剑的主动能力
- */
+**/
 func useBlade()
   ?item.GetCooldown(＂blade＂) <= 0 &
   ^pickup.distance >= 20 &
@@ -286,20 +287,20 @@ func useBlade()
 /** 自动拾取
  *  距离可拾取物品足够近的时候
  *  自动拾取物品
- */
+**/
 func autoPickup()
   ?pickup & pickup.distance < 10
     equipL star_stone
     equipR shield ah
 /** 血量小于7喝药
- */
+**/
 func autoPotion()
   ?hp <= maxhp*0.3
     activate potion
 /** 加速
  *  在离怪物,可拾取物,可收获物
  *  足够远的时候装备三曲腿加速跑
- */
+**/
 func runFast()
   ?foe.distance >= 20 &
   ^ pickup.distance >= 20 &
@@ -307,7 +308,7 @@ func runFast()
     equipL triskelion fuse
     equipR shield ah
 /** 显示自定义变量的值
- */
+**/
 func showInfo()
   >c-42,11,Heal@maxhp * LOW_HP_PERSENT@:
   ^@hp <= maxhp * LOW_HP_PERSENT@
@@ -315,13 +316,13 @@ func showInfo()
     >c-42,10,NeedHealToMaxHp:
     ^@needHealToMaxHp@
 /** 显示宝箱位置
- */
+**/
 func freeChest()
   ?loc = undead_crypt_intro
     var freeChest = import UI/FreeChestTracker
     freeChest.Main()
 /** 执行对应关卡的策略
- */
+**/
 levelRocky(MAIN_LO,HEAL_LO)
 levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
 levelCaves(MAIN_LO,HEAL_LO)
@@ -331,33 +332,20 @@ levelMine(MAIN_LO,HEAL_LO)
 levelIcy(MAIN_LO,HEAL_LO)
 levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
 /** 其他功能
-*/
+**/
 autoPickup()
 steal()
-// bladeMission35kill()
-bladeMission40kDMG()
+//bladeMission35kill()
+//addRstBtn()
+bladeMission400kDMG()
 useBlade()
 autoPotion()
 runFast()
 freeChest()
 
 showInfo()
-//addRstBtn()
 
 breakString(6,loc,loc.name)
 breakString(8,foe,foe.name)
 
-/** 测试代码区域
-*/
-// 显示Level Info
-//Print(1,loc)
-
-// 显示Level是否是rocky
-//Print(2,loc=forest)
-
-// 显示目标
-//Print(3,harvest)
-//Print(4,pickup)
-
-//>`0,1,Left ID:@item.left.id@
-//>`,0,2,Right ID:@item.right.id@
+/** 完毕 ***/
