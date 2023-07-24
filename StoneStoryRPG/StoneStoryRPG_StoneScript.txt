@@ -20,8 +20,19 @@ var needHealToMaxHp = false
  *  message 需要输出的消息,可以是变量名
  */
 func Print(posY,message)
-  >`1,@posY@,#rainE1,@message@
-
+  >`1,@posY@,#ffc57f,@message@
+/** 拆分字符串
+ *  当信息超出一行的时候拆分成两行显示
+ */
+func breakString(posY,s,atS)
+  ?s
+    var a = string.Break(s, 60)
+    ? a.Count() = 1
+        >`1,@posY@,#ffc57f,@atS@:@a［0］@
+    :
+      for i = 0 .. a.Count()-1
+        >`1,@posY+i@,#ffc57f,@atS@_@i+1@:@a［i］@
+        //Print(posY+i, a［i］)
 /** 岩石高地
  *  自动铲石头
  *  mainLO: 主Loadout
@@ -172,7 +183,7 @@ func addRstBtn()
 func bladeMission()
   var monsArr
   var foeName
-  monsArr = []
+  monsArr = ［］
   foeName = foe.name
 
   ?foe &
@@ -187,9 +198,9 @@ func bladeMission()
     :
       ?useBlade() = true
         monsArr.Add(foeName)
-    ?monsArr ! []
+    ?monsArr ! ［］
       storage.Set(＂blade_used_monsters＂, 
-      ^string.Join(" ", monsArr))
+      ^string.Join(＂ ＂, monsArr))
     
   breakString(9,foe.name,@nowMon)
   breakString(10,
@@ -232,7 +243,6 @@ func runFast()
     equipL triskelion fuse
     equipR shield ah
 /** 显示自定义变量的值
- *
  */
 func showInfo()
   >c-42,11,Heal@maxhp * LOW_HP_PERSENT@:
@@ -240,15 +250,6 @@ func showInfo()
   ?loc = caves
     >c-42,10,NeedHealToMaxHp:
     ^@needHealToMaxHp@
-/** 拆分字符串
- *  当信息超出一行的时候拆分成两行显示
- */
-func breakString(posY,s,atS)
-  ?s
-    var a = string.Break(s, 60)
-    for i = 0 .. a.Count()-1
-      >`1,@posY+i@,#rainE1,@atS@@i+1@:@a［i］@
-      //Print(posY+i, a［i］)
 /** 显示宝箱位置
  */
 func freeChest()
@@ -277,8 +278,8 @@ freeChest()
 showInfo()
 //addRstBtn()
 
-breakString(5,loc,@loc)
-breakString(7,foe,@foe)
+breakString(5,loc,loc.name)
+breakString(7,foe,foe.name)
 
 /** 测试代码区域
 */
