@@ -15,18 +15,17 @@ var MAGIC_LO = 4
 var PHY_LO = 1
 
 var needHealToMaxHp = false
-/**
- * 在屏幕指定位置输出消息
- * posY:屏幕Y轴坐标
- * message 需要输出的消息,可以是变量名
+/** 在屏幕指定位置输出消息
+ *  posY:屏幕Y轴坐标
+ *  message 需要输出的消息,可以是变量名
  */
 func Print(posY,message)
   >`1,@posY@,#rainE1,@message@
 
 /** 岩石高地
- * 自动铲石头
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
+ *  自动铲石头
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
  */
 func levelRocky(mainLO,healLO)
   ?loc = rocky
@@ -38,10 +37,10 @@ func levelRocky(mainLO,healLO)
     ^ harvest.distance < 30
       equip shovel
 /** 枯木峡谷
- * 自动砍树
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
- * phyLO: 物理伤害Loadout
+ *  自动砍树
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
+ *  phyLO: 物理伤害Loadout
  */
 func levelDeadwood(mainLO,healLO,phyLO)
   ?loc = deadwood
@@ -55,9 +54,9 @@ func levelDeadwood(mainLO,healLO,phyLO)
     ?harvest = Tree
       equip hatchet
 /** 恐怖洞窟
- * 在打完boss之后补满血
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
+ *  在打完boss之后补满血
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
  */
 func levelCaves(mainLO,healLO)
   ?loc = caves
@@ -66,7 +65,7 @@ func levelCaves(mainLO,healLO)
       loadout 4
       needHealToMaxHp = true
     ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
+      loadout @healL  O@
     ?needHealToMaxHp = true & 
     ^hp <= maxhp &
     ^foe ! boss
@@ -76,18 +75,20 @@ func levelCaves(mainLO,healLO)
     ?foe = tiny_spider
       loadout 4
 /** 蘑菇森林
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
  */
 func levelForest(mainLO,healLO)
   ?loc = forest
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
+    ?foe = ant
+      loadout 4
 /** 亡者之殿
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
- * magicLO: 魔法伤害Loadout
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
+ *  magicLO: 魔法伤害Loadout
  */
 func levelHalls(mainLO,healLO,magicLO)
   ?loc = halls
@@ -97,8 +98,8 @@ func levelHalls(mainLO,healLO,magicLO)
     ?foe = immune_to_physical
       loadout @magicLO@
 /** 灼热矿井
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
  */
 func levelMine(mainLO,healLO)
   ?loc = mine
@@ -108,8 +109,8 @@ func levelMine(mainLO,healLO)
     ?foe = fluff & foe.distance = 5
       equipL mind stone
 /** 不融山
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
  */
 func levelIcy(mainLO,healLO)
   ?loc = icy
@@ -117,9 +118,9 @@ func levelIcy(mainLO,healLO)
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
 /** 神庙
- * mainLO: 主Loadout
- * healLO: 治疗Loadout
- * magicLO: 魔法伤害Loadout
+ *  mainLO: 主Loadout
+ *  healLO: 治疗Loadout
+ *  magicLO: 魔法伤害Loadout
  */
 func levelTemple(mainLO,healLO,magicLO)
   ?loc = temple
@@ -132,11 +133,11 @@ func levelTemple(mainLO,healLO,magicLO)
       ?foe = flying_serpent
         loadout 4
 /** 使用骷髅手臂
- * 在骷髅手臂可用,
- * 可以使用技能秒杀怪物
- * 非物理免疫,非boss
- * 不会干扰加速跑和自动捡取时
- * 装备并且使用骷髅手臂
+ *  在骷髅手臂可用,
+ *  可以使用技能秒杀怪物
+ *  非物理免疫,非boss
+ *  不会干扰加速跑和自动捡取时
+ *  装备并且使用骷髅手臂
  */
 func steal()
   ?item.GetCooldown(＂skeleton_arm＂) <= 0 & 
@@ -150,9 +151,64 @@ func steal()
     ?item.CanActivate(＂skeleton_arm＂)
        activate R
        >o-2,-3,#ffcccc,shhhh!~
+/** 点击重置按钮之后重置
+ *  ＂blade_used_monsters＂
+ */
+func OnRstBtnPressed()
+  storage.Delete(＂blade_used_monsters＂)
+/** 添加重置按钮
+ */
+?loc.begin
+  var rstBtn = ui.AddButton()
+  rstBtn.y = 1
+  rstBtn.text = 重置blade_used_monsters
+  rstBtn.SetPressed(OnRstBtnPressed)
+/** 自动统计被堕神之剑的主动能力杀死的敌人
+ *  用于完成 击败35类敌人 的任务
+ *  由于无法获取全部敌人信息
+ *  只能多次执行
+ */
+func bladeMission()
+  var monsArr
+  var foeName
+  monsArr = []
+  foeName = foe.name
+
+  ?foe &
+  ^foe.distance <= 20 
+    ?storage.Has(＂blade_used_monsters＂)
+      monsArr = 
+      ^string.Split(
+      ^storage.Get(＂blade_used_monsters＂))
+      ? ! monsArr.Contains(foeName)
+        ?useBlade() = true
+          monsArr.Add(foeName)
+    :
+      ?useBlade() = true
+        monsArr.Add(foeName)
+    ?monsArr ! []
+      storage.Set(＂blade_used_monsters＂, 
+      ^string.Join(" ", monsArr))
+    
+  breakString(9,foe.name,@nowMon)
+  breakString(10,
+  ^storage.Get(＂blade_used_monsters＂)
+  ^,@monsArr)
+/** 使用堕神大剑的主动能力
+ */
+func useBlade()
+  ?item.GetCooldown(＂blade＂) <= 0 &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20
+    equip blade
+    ?item.CanActivate(＂blade＂)
+      activate R
+      >o-2,-3,#ffcccc,使用技能
+      return true
+  return false
 /** 自动拾取
- * 距离可拾取物品足够近的时候
- * 自动拾取物品
+ *  距离可拾取物品足够近的时候
+ *  自动拾取物品
  */
 func autoPickup()
   ?pickup & pickup.distance < 10
@@ -164,8 +220,8 @@ func autoPotion()
   ?hp <= maxhp*0.3
     activate potion
 /** 加速
- * 在离怪物,可拾取物,可收获物
- * 足够远的时候装备三曲腿加速跑
+ *  在离怪物,可拾取物,可收获物
+ *  足够远的时候装备三曲腿加速跑
  */
 func runFast()
   ?foe.distance >= 20 &
@@ -183,7 +239,7 @@ func showInfo()
     >c-42,10,NeedHealToMaxHp:
     ^@needHealToMaxHp@
 /** 拆分字符串
- * 当信息超出一行的时候拆分成两行显示
+ *  当信息超出一行的时候拆分成两行显示
  */
 func breakString(posY,s,atS)
   ?s
@@ -192,7 +248,6 @@ func breakString(posY,s,atS)
       >`1,@posY+i@,#rainE1,@atS@@i+1@:@a［i］@
       //Print(posY+i, a［i］)
 /** 显示宝箱位置
- * 
  */
 func freeChest()
   ?loc = undead_crypt_intro
@@ -212,6 +267,7 @@ levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
 */
 autoPickup()
 steal()
+bladeMission()
 autoPotion()
 runFast()
 freeChest()
@@ -220,6 +276,7 @@ showInfo()
 
 breakString(5,loc,@loc)
 breakString(7,foe,@foe)
+
 /** 测试代码区域
 */
 // 显示Level Info
