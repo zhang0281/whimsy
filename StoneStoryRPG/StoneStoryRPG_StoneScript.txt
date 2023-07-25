@@ -111,7 +111,7 @@ func levelForest(mainLO,healLO)
  *  magicLO: 魔法伤害Loadout
  *  ? *>15 : use crossbow 3sec. 
 **/
-var timer = 5*30
+var timer = 7*30
 var ghostBossFlag = false
 func levelHalls(mainLO,healLO,magicLO)
   ?loc = halls
@@ -121,13 +121,13 @@ func levelHalls(mainLO,healLO,magicLO)
     ?foe = ghost_tomb &
       ^ foe = boss &
       ^ foe = spawner
-      timer = 5*30
+      timer = 7*30
       ghostBossFlag = true
     ?timer > 0 & ghostBossFlag = true
       loadout 2
       timer--
     :
-      timer = 3*30
+      timer = 7*30
       ghostBossFlag = false
     ?foe = immune_to_physical
       loadout @magicLO@
@@ -267,7 +267,6 @@ func bladeMission35kill()
   ^ + ＂/35＂)
 /** 完成400000重击伤害任务 **/
 func bladeMission400kDMG()
-  >`0,1,@@
   ?foe = boss & loc = deadwood & foe = phase2 |
     ^ hp <= maxhp * LOW_HP_PERSENT |
     ^ foe = immune_to_ranged |
