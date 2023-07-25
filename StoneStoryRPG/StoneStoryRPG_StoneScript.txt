@@ -68,6 +68,11 @@ func levelDeadwood(mainLO,healLO,phyLO)
     // 自动砍树
     ?harvest = Tree
       equip hatchet
+    ?foe = wasp
+      loadout 4
+    ?foe = boss & foe = phase2
+      equipL war hammer *10 +21
+      equipR sword Vigor *10 +21
 /** 恐怖洞窟
  *  在打完boss之后补满血
  *  mainLO: 主Loadout
@@ -194,8 +199,7 @@ func useBlade()
   ^foe.count > 5 &
   ^foe.distance <= 20 &
   ^pickup.distance >= 20 &
-  ^harvest.distance >= 20 &
-  ^(foe.armor + foe.hp) < 190
+  ^harvest.distance >= 20
     equip blade
     ?item.CanActivate(＂blade＂)
       activate R
@@ -238,7 +242,15 @@ func bladeMission35kill()
   ^ + ＂/35＂)
 /** 完成400000重击伤害任务 **/
 func bladeMission400kDMG()
-  ?foe
+
+  ?foe = boss & loc = deadwood &
+    ^ foe = phase2 |
+    ^ hp <= maxhp * LOW_HP_PERSENT
+    return false
+
+  ?foe &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20
     var debuffStr = foe.debuffs.string
     // >`0,2,foe.count:@foe.count@
     // breakString(3,debuffStr,＂debuffs＂)
@@ -248,26 +260,27 @@ func bladeMission400kDMG()
       ^ foe ! immune_to_ranged
       equipL wand poison
       equipR shield ah
-    :?string.IndexOf(
-      ^debuffStr,＂debuff_chill＂) = -1&
-      ^string.IndexOf(
-      ^debuffStr,＂debuff_chill:6＂) = -1&
+    :?string.IndexOf(debuffStr,
+      ^＂debuff_chill＂) = -1&
+      ^string.IndexOf(debuffStr,
+      ^＂debuff_chill:6＂) = -1&
       ^ foe ! immune_to_debuff_chill &
       ^ foe ! immune_to_ranged
       equipL wand ice
       equipR shield ah
-    :?string.IndexOf(
-      ^debuffStr,＂debuff_dot:1＂) = -1&
+    :?string.IndexOf(debuffStr,
+      ^＂debuff_dot:1＂) = -1&
       ^ foe ! immune_to_debuff_dot &
       ^ foe ! immune_to_ranged
       equipL wand fire
       equipR shield ah
-    :?string.IndexOf(
-      ^debuffStr,＂stun:1＂) = -1 &
+    :?string.IndexOf(debuffStr,
+      ^＂stun:1＂) = -1 &
       ^ foe ! immune_to_stun &
       ^ loc ! mine & foe ! explode
-      equipL hammer *max +21
+      equipL hammer *10 +21
       equipR shield ah
+
     // ?foe.debuffs.string
     //   var debuffsArr = 
     //   ^string.Split(foe.debuffs.string,＂,＂,true)
@@ -287,7 +300,8 @@ func bladeMission400kDMG()
 
 /** 使用面具的主动能力 **/
 func useMask()
-  ?foe = boss & loc = temple
+  ?foe = boss & 
+    ^(loc = temple)
     return false
 
   ?item.GetCooldown(＂mask＂) <= 0 &
@@ -367,7 +381,7 @@ freeChest()
 // 显示对应的提示信息
 showInfo()
 
-//breakString(6,loc,loc.name)
-//breakString(8,foe,foe.name)
+// breakString(6,loc,loc.name)
+// breakString(8,foe,foe.name)
 
 /** 完毕 **/
