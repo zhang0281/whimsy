@@ -111,8 +111,13 @@ func levelForest(mainLO,healLO)
  *  magicLO: 魔法伤害Loadout
  *  ? *>15 : use crossbow 3sec. 
 **/
-var timer = 7*30
 var ghostBossFlag = false
+var timer = 3*30
+var timer2 = 7*30
+?loc.begin | loc.loop
+  ghostBossFlag = false
+  timer = 3*30
+  timer2 = 7*30
 func levelHalls(mainLO,healLO,magicLO)
   ?loc = halls
     loadout @mainLO@
@@ -123,17 +128,29 @@ func levelHalls(mainLO,healLO,magicLO)
       ?foe = large_ghost
         equipL wand Vigor
         equipR shield ah
+    /*
+    如果是召唤boss,用7秒的冰驽
+    如果还在打large_ghost,等10s,如果还是large_ghost,再来7s
+    */
     ?foe = ghost_tomb &
       ^ foe = boss &
       ^ foe = spawner
-      timer = 7*30
+      timer = 3*30
       ghostBossFlag = true
+
     ?timer > 0 & ghostBossFlag = true
       loadout 2
       timer--
     :
-      timer = 7*30
+      timer = 3*30
       ghostBossFlag = false
+      ?foe = large_ghost
+        ?timer2 > 0 & ghostBossFlag = false
+          timer2--
+        :
+          timer2 = 7*30
+          ?foe = large_ghost
+            ghostBossFlag = true
   ?loc = undead_crypt_boss_harder
     equipL wand Vigor
     equipR sword Vigor *10 +21
@@ -270,7 +287,8 @@ func bladeMission400kDMG()
   ?foe = boss & loc = deadwood & foe = phase2 |
     ^ hp <= maxhp * LOW_HP_PERSENT |
     ^ foe = immune_to_ranged |
-    ^ loc = undead_crypt_boss_harder
+    ^ loc = undead_crypt_boss_harder |
+    ^ ghostBossFlag = true
     return false
 
   ?foe &
