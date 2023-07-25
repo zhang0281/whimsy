@@ -118,6 +118,11 @@ func levelHalls(mainLO,healLO,magicLO)
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
+    ?foe = immune_to_physical
+      loadout @magicLO@
+      ?foe = large_ghost
+        equipL wand Vigor
+        equipR shield ah
     ?foe = ghost_tomb &
       ^ foe = boss &
       ^ foe = spawner
@@ -129,11 +134,6 @@ func levelHalls(mainLO,healLO,magicLO)
     :
       timer = 7*30
       ghostBossFlag = false
-    ?foe = immune_to_physical
-      loadout @magicLO@
-      ?foe = large_ghost
-        equipL wand Vigor
-        equipR shield ah
   ?loc = undead_crypt_boss_harder
     equipL wand Vigor
     equipR sword Vigor *10 +21
