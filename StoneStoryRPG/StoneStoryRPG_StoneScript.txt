@@ -10,6 +10,8 @@ import UI/BetterInfo2
 
 /** 预设变量 **/
 ?loc.begin
+  var freeChestTracker = import UI/FreeChestTracker
+  var myUtils = new UI/OkamiroyUtils
   var MAIN_LO = 2
   var HEAL_LO = 3
   var MAGIC_LO = 4
@@ -38,6 +40,15 @@ func breakString(posY,s,atS)
       for i = 0 .. a.Count()-1
         >`1,@posY+i@,#ffc57f,@atS@_@i+1@:@a［i］@
         //Print(posY+i, a［i］)
+
+/** 在循环后自动回满HP **/
+func loopHealHP()
+  ?needHealToMaxHp = true & 
+  ^hp <= maxhp &
+  ^foe ! boss
+    loadout @healLO@
+    ?hp = maxhp
+      needHealToMaxHp = false
 
 /** 岩石高地
  *  自动铲石头
@@ -88,12 +99,7 @@ func levelCaves(mainLO,healLO)
       needHealToMaxHp = true
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
-    ?needHealToMaxHp = true & 
-    ^hp <= maxhp &
-    ^foe ! boss
-      loadout @healLO@
-      ?hp = maxhp
-        needHealToMaxHp = false
+    loopHealHP()
     ?foe = tiny_spider
       loadout 4
 /** 蘑菇森林
@@ -105,6 +111,7 @@ func levelForest(mainLO,healLO)
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
+    loopHealHP()
     ?foe = ant
       loadout 4
 /** 亡者之殿
@@ -125,6 +132,7 @@ func levelHalls(mainLO,healLO,magicLO)
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
+    loopHealHP()
     ?foe = immune_to_physical
       loadout @magicLO@
       ?foe = large_ghost
@@ -173,6 +181,7 @@ func levelMine(mainLO,healLO)
       loadout 5
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
+    loopHealHP()
     ?(foe = fluff | foe = explode) & foe.distance <= 5
       equipL mind stone
 /** 不融山
@@ -184,6 +193,7 @@ func levelIcy(mainLO,healLO)
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
+    loopHealHP()
 /** 神庙
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
@@ -194,11 +204,12 @@ func levelTemple(mainLO,healLO,magicLO)
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
-      // 魔免怪加载近战
-      ?foe = immune_to_Vigor
-        loadout @magicLO@
-      ?foe = flying_serpent
-        loadout 4
+    loopHealHP()
+    // 魔免怪加载近战
+    ?foe = immune_to_Vigor
+      loadout @magicLO@
+    ?foe = flying_serpent
+      loadout 4
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -396,14 +407,13 @@ func showInfo()
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
 
-  >c-42,12,Heal@maxhp * LOW_HP_PERSENT@:
+  >c-42,11,Heal@maxhp * LOW_HP_PERSENT@:
   ^@hp <= maxhp * LOW_HP_PERSENT@
 
   ?loc = caves
-    >c-42,11,NeedHealToMaxHp:
+    >c-42,10,NeedHealToMaxHp:
     ^@needHealToMaxHp@
 
-  var myUtils = new UI/OkamiroyUtils
   myUtils.ShowTimer(10, 1)
   myUtils.ShowTimeStats(60, 1)
   myUtils.ShowFoesBar(19, 1, 30, true)
@@ -411,8 +421,6 @@ func showInfo()
 /** 显示宝箱位置 **/
 func freeChest()
   ?loc = undead_crypt_intro
-    var freeChestTracker = 
-    ^import UI/FreeChestTracker
     freeChestTracker.Main()
 
 /** 执行对应关卡的策略 **/
@@ -424,8 +432,7 @@ levelHalls(MAIN_LO,HEAL_LO,MAGIC_LO)
 levelMine(MAIN_LO,HEAL_LO)
 levelIcy(MAIN_LO,HEAL_LO)
 levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
-/** 其他功能
-**/
+/** 其他功能 **/
 // 自动拾取
 autoPickup()
 // 偷取道具
