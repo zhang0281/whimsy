@@ -109,14 +109,35 @@ func levelForest(mainLO,healLO)
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
  *  magicLO: 魔法伤害Loadout
+ *  ? *>15 : use crossbow 3sec. 
 **/
+var timer = 5*30
+var ghostBossFlag = false
 func levelHalls(mainLO,healLO,magicLO)
   ?loc = halls
     loadout @mainLO@
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
+    ?foe = ghost_tomb &
+      ^ foe = boss &
+      ^ foe = spawner
+      timer = 5*30
+      ghostBossFlag = true
+    ?timer > 0 & ghostBossFlag = true
+      loadout 2
+      timer--
+    :
+      timer = 3*30
+      ghostBossFlag = false
     ?foe = immune_to_physical
       loadout @magicLO@
+      ?foe = large_ghost
+        equipL wand Vigor
+        equipR shield ah
+  ?loc = undead_crypt_boss_harder
+    equipL wand Vigor
+    equipR sword Vigor *10 +21
+      
 /** 灼热矿井
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
@@ -195,6 +216,10 @@ func addRstBtn()
     rstBtn.SetPressed(OnRstBtnPressed)
 /** 使用堕神大剑的主动能力 **/
 func useBlade()
+  ?foe = boss & loc = deadwood & foe = phase2 |
+    ^ loc = undead_crypt_boss_harder
+    return false
+
   ?item.GetCooldown(＂blade＂) <= 0 &
   ^foe.count > 5 &
   ^foe.distance <= 20 &
@@ -242,10 +267,12 @@ func bladeMission35kill()
   ^ + ＂/35＂)
 /** 完成400000重击伤害任务 **/
 func bladeMission400kDMG()
-
-  ?foe = boss & loc = deadwood &
-    ^ foe = phase2 |
-    ^ hp <= maxhp * LOW_HP_PERSENT
+  >`0,1,@@
+  ?foe = boss & loc = deadwood & foe = phase2 |
+    ^ hp <= maxhp * LOW_HP_PERSENT |
+    ^ foe = immune_to_ranged |
+    ^ foe = large_ghost |
+    ^ loc = undead_crypt_boss_harder
     return false
 
   ?foe &
