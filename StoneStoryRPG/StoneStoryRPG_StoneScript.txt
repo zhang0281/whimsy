@@ -119,6 +119,8 @@ func levelHalls(mainLO,healLO,magicLO)
 func levelMine(mainLO,healLO)
   ?loc = mine
     loadout @mainLO@
+    ?foe = boss
+      loadout 5
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
     ?(foe = fluff | foe = explode) & foe.distance <= 5
@@ -285,12 +287,14 @@ func bladeMission400kDMG()
 
 /** 使用面具的主动能力 **/
 func useMask()
+  ?foe = boss & loc = temple
+    return false
+
   ?item.GetCooldown(＂mask＂) <= 0 &
   ^foe.count > 0 &
   ^foe.distance <= 20 &
   ^pickup.distance >= 20 &
-  ^harvest.distance >= 20 &
-  ^(foe ! boss & loc ! temple)
+  ^harvest.distance >= 20
     equip mask
     ?item.CanActivate(＂mask＂)
       activate R
