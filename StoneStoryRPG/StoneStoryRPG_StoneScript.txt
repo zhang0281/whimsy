@@ -302,6 +302,7 @@ func bladeMission400kDMG()
     :?string.IndexOf(debuffStr,
       ^＂stun:1＂) = -1 &
       ^ foe ! immune_to_stun &
+      ^ foe ! immune_to_physical & 
       ^ loc ! mine & foe ! explode
       equipL hammer *10 +21
       equipR shield ah
