@@ -270,7 +270,6 @@ func bladeMission400kDMG()
   ?foe = boss & loc = deadwood & foe = phase2 |
     ^ hp <= maxhp * LOW_HP_PERSENT |
     ^ foe = immune_to_ranged |
-    ^ foe = large_ghost |
     ^ loc = undead_crypt_boss_harder
     return false
 
