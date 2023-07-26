@@ -43,6 +43,8 @@ func breakString(posY,s,atS)
 
 /** 在循环后自动回满HP **/
 func loopHealHP()
+  ?foe = boss
+    needHealToMaxHp = true
   ?needHealToMaxHp = true & 
   ^hp <= maxhp &
   ^foe ! boss
@@ -96,7 +98,6 @@ func levelCaves(mainLO,healLO)
     loadout @mainLO@
     ?foe = boss
       // loadout 4
-      needHealToMaxHp = true
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
     loopHealHP()
@@ -326,8 +327,6 @@ func bladeMission400kDMG()
       equipL wand poison
       equipR shield ah
     :?string.IndexOf(debuffStr,
-      ^＂debuff_chill＂) = -1&
-      ^string.IndexOf(debuffStr,
       ^＂debuff_chill:6＂) = -1&
       ^ foe ! immune_to_debuff_chill &
       ^ foe ! immune_to_ranged
@@ -410,9 +409,8 @@ func showInfo()
   >c-42,11,Heal@maxhp * LOW_HP_PERSENT@:
   ^@hp <= maxhp * LOW_HP_PERSENT@
 
-  ?loc = caves
-    >c-42,10,NeedHealToMaxHp:
-    ^@needHealToMaxHp@
+  >c-42,10,NeedHealToMaxHp:
+  ^@needHealToMaxHp@
 
   myUtils.ShowTimer(10, 1)
   myUtils.ShowTimeStats(60, 1)
@@ -435,13 +433,16 @@ levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
 /** 其他功能 **/
 // 自动拾取
 autoPickup()
+
+//bladeMission35kill()
+//addRstBtn()
+bladeMission400kDMG()
+
 // 偷取道具
 steal()
 // 堕神大剑相关
 useBlade()
-//bladeMission35kill()
-//addRstBtn()
-bladeMission400kDMG()
+
 // 使用面具
 useMask()
 // 低血量回血
