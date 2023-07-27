@@ -24,6 +24,20 @@ import UI/BetterInfo2
   var debug = false
 // debug = true
 
+/** 获取弱点 **/
+func getWeakness()
+  ?foe = "Vigor"
+    return "Poison"
+  ?foe = "AEther"
+    return "Vigor"
+  ?foe = "Fire"
+    return "AEther"
+  ?foe = " Ice"
+    return "Fire"
+  ?foe = " Poison"
+    return "Ice"
+  return false
+
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
  *  message 需要输出的消息,可以是变量名
@@ -64,13 +78,24 @@ func loopHealHP(healLO)
 **/
 func levelRocky(mainLO,healLO)
   ?loc = rocky
+    ?foe = phase3
+      LOW_HP_PERSENT = 0.95
     loadout @mainLO@
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
     // 自动铲石头
     ?harvest = Boulder &
     ^ harvest.distance < 30
       equip shovel
+    ?foe = boss &
+      ^getWeakness() ! false
+      ?item.GetCooldown(＂shield dash *10＂) <= 0 
+        equipR shield dash *10
+        ?item.CanActivate(＂shield dash *10＂)
+          activate R
+        equipL wand @getWeakness()@ *10 +21
+    ?hp <= maxhp * LOW_HP_PERSENT
+      loadout @healLO@
+      equipL wand Vigor
+      equipR sword Vigor *10 +21
 /** 枯木峡谷
  *  自动砍树
  *  mainLO: 主Loadout
@@ -315,6 +340,7 @@ func bladeMission400kDMG()
     ^ hp <= maxhp * LOW_HP_PERSENT |
     ^ foe = immune_to_ranged |
     ^ loc = undead_crypt_boss_harder |
+    ^ (loc = rocky & foe = boss) |
     ^ ghostBossFlag = true |
     ^ needHealToMaxHp = true
     return false
@@ -410,6 +436,9 @@ func runFast()
     equipR shield ah
 /** 显示自定义变量的值 **/
 func showInfo()
+  ?loc = undead_crypt_intro
+    return false
+  
   ?debug = true
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
