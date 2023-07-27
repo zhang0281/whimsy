@@ -94,8 +94,6 @@ func levelRocky(mainLO,healLO)
         equipL wand @getWeakness()@ *10 +21
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
-      equipL wand Vigor
-      equipR sword Vigor *10 +21
 /** 枯木峡谷
  *  自动砍树
  *  mainLO: 主Loadout
@@ -436,7 +434,12 @@ func runFast()
     equipR shield ah
 /** 显示自定义变量的值 **/
 func showInfo()
-  ?loc = undead_crypt_intro
+  ?loc = undead_crypt_intro |
+    ^ loc = uulaa_shop |
+    ^ loc = waterfall |
+    ^ loc = deadwood_river |
+    ^ loc = bronze_mine |
+    ^ loc = cross_bridge
     return false
   
   ?debug = true
