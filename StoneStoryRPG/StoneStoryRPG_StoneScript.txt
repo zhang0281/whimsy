@@ -26,16 +26,16 @@ import UI/BetterInfo2
 
 /** 获取弱点 **/
 func getWeakness()
-  ?foe = "Vigor"
-    return "Poison"
-  ?foe = "AEther"
-    return "Vigor"
-  ?foe = "Fire"
-    return "AEther"
-  ?foe = " Ice"
-    return "Fire"
-  ?foe = " Poison"
-    return "Ice"
+  ?foe = ＂Vigor＂
+    return ＂Poison＂
+  ?foe = ＂AEther＂
+    return ＂Vigor＂
+  ?foe = ＂Fire＂
+    return ＂AEther＂
+  ?foe = ＂ Ice＂
+    return ＂Fire＂
+  ?foe = ＂ Poison＂
+    return ＂Ice＂
   return false
 
 /** 在屏幕指定位置输出消息
