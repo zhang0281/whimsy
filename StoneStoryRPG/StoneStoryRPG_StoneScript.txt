@@ -3,6 +3,17 @@
 // 其他信息请见:StoneStoryRPG.com/stonescript.
 // ——贤者贝赛拉
 
+/*Poison (∞) in the Caves of Fear and the Temple
+Vigor  (♥) in the Mushroom Forest
+Æther  (*) in the Haunted Halls
+Fire   (φ) in the Bronze Mines
+Ice    (❄) in the Icy Ridge
+恐怖洞窟 & 神庙 中的 毒药（∞）
+蘑菇森林 里的 活力（♥）
+亡者之殿 中的 以太 (*)
+灼热矿井 中的 火 (φ)
+不融山中 的 冰 (❄)*/
+
 //import Cosmetics/Hats/Skully
 import Cosmetics/PetBoo
 import Fishing
