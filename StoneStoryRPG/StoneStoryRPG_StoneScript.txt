@@ -8,8 +8,8 @@ Vigor  (♥) in the Mushroom Forest
 Æther  (*) in the Haunted Halls
 Fire   (φ) in the Bronze Mines
 Ice    (❄) in the Icy Ridge
-恐怖洞窟 & 神庙 中的 毒药（∞）
-蘑菇森林 里的 活力（♥）
+恐怖洞窟 & 神庙 中的 毒药(∞)
+蘑菇森林 里的 活力(♥)
 亡者之殿 中的 以太 (*)
 灼热矿井 中的 火 (φ)
 不融山中 的 冰 (❄)*/
@@ -33,6 +33,17 @@ import UI/BetterInfo2
   var needHealToMaxHp = false
 
   var debug = false
+
+  var adaptiveDef
+  var ghostBossFlag = false
+  var timer = 3*30
+  var timer2 = 7*30
+
+?loc.begin | loc.loop
+  ghostBossFlag = false
+  timer = 3*30
+  timer2 = 7*30
+
 // debug = true
 
 /** 获取弱点 **/
@@ -49,6 +60,9 @@ func getWeakness()
     return ＂Ice＂
   return false
 
+func equipWeakness()
+  equipL wand @getWeakness()@ *10 +21
+  equipR shield ah
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
  *  message 需要输出的消息,可以是变量名
@@ -92,18 +106,37 @@ func levelRocky(mainLO,healLO)
   ?loc = rocky
     ?foe = phase3
       LOW_HP_PERSENT = 0.95
-    loadout @mainLO@
+    equipWeakness()
     // 自动铲石头
     ?harvest = Boulder &
     ^ harvest.distance < 30
       equip shovel
     ?foe = boss &
-      ^getWeakness() ! false
+      ^getWeakness() ! false &
+      ^string.IndexOf(foe.buffs.string,
+      ^＂buff_protection＂) = -1
       ?item.GetCooldown(＂shield dash *10＂) <= 0 
         equipR shield dash *10
         ?item.CanActivate(＂shield dash *10＂)
           activate R
-        equipL wand @getWeakness()@ *10 +21
+    ?foe.buffs.string
+      adaptiveDef = foe.buffs.string
+      adaptiveDef = string.Split(adaptiveDef,＂:＂,true)［1］
+      adaptiveDef = string.Split(adaptiveDef,＂adaptive_defense_＂,true)［0］
+      >`0,5,@adaptiveDef@
+    ?adaptiveDef
+      ?adaptiveDef = Poison
+        equipL wand Vigor *10 +21
+      ?adaptiveDef = Vigor
+        equipL wand AEther *10 +21
+      ?adaptiveDef = AEther
+        equipL wand Fire *10 +21
+      ?adaptiveDef = Fire
+        equipL wand Ice *10 +21
+      ?adaptiveDef = Ice
+        equipL wand Poison *10 +21
+      equipR shield ah
+
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
 /** 枯木峡谷
@@ -114,7 +147,7 @@ func levelRocky(mainLO,healLO)
 **/
 func levelDeadwood(mainLO,healLO,phyLO)
   ?loc = deadwood
-    loadout @mainLO@
+    equipWeakness()
     loopHealHP(healLO)
     // 魔免怪加载近战
     ?foe = immune_to_ranged
@@ -138,8 +171,7 @@ func levelCaves(mainLO,healLO)
     loadout @mainLO@
     loopHealHP(healLO)
     ?foe = tiny_spider
-      equipL wand ice
-      equipR shield ah
+      equipWeakness()
 /** 蘑菇森林
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
@@ -149,28 +181,21 @@ func levelForest(mainLO,healLO)
     loadout @mainLO@
     loopHealHP(healLO)
     ?foe = ant
-      equipL wand ice
-      equipR shield ah
+      equipWeakness()
 /** 亡者之殿
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
  *  magicLO: 魔法伤害Loadout
  *  ? *>15 : use crossbow 3sec. 
 **/
-var ghostBossFlag = false
-var timer = 3*30
-var timer2 = 7*30
-?loc.begin | loc.loop
-  ghostBossFlag = false
-  timer = 3*30
-  timer2 = 7*30
 func levelHalls(mainLO,healLO)
   ?loc = halls
     loadout @mainLO@
     loopHealHP(healLO)
     ?foe = immune_to_physical
-      equipL wand Vigor
-      equipR shield ah
+      // equipL wand Vigor
+      // equipR shield ah
+      equipWeakness()
     /*
     如果是召唤boss,用3秒的冰驽
     如果还在打large_ghost,等7s,如果还是large_ghost,再来3s
@@ -182,7 +207,7 @@ func levelHalls(mainLO,healLO)
       ghostBossFlag = true
 
     ?timer > 0 & ghostBossFlag = true
-      loadout 2
+      equip crossbow ice D *10 +21
       timer--
     :
       timer = 3*30
@@ -222,7 +247,7 @@ func levelMine(mainLO,healLO)
 **/
 func levelIcy(mainLO,healLO)
   ?loc = icy
-    loadout @mainLO@
+    equipWeakness()
     loopHealHP(healLO)
 /** 神庙
  *  mainLO: 主Loadout
@@ -231,14 +256,13 @@ func levelIcy(mainLO,healLO)
 **/
 func levelTemple(mainLO,healLO,magicLO)
   ?loc = temple
-    loadout @mainLO@
+    equipWeakness()
     loopHealHP(healLO)
     // 魔免怪加载近战
     ?foe = immune_to_Vigor
       loadout @magicLO@
     ?foe = flying_serpent
-      equipL wand ice
-      equipR shield ah
+      equipWeakness()
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -341,7 +365,9 @@ func bladeMission400kDMG()
     ^ loc = undead_crypt_boss_harder |
     ^ (loc = rocky & foe = boss) |
     ^ ghostBossFlag = true |
-    ^ needHealToMaxHp = true
+    ^ needHealToMaxHp = true |
+    ^string.IndexOf(foe.buffs.string,
+    ^＂buff_protection＂) ! -1
     return false
 
   ?foe &
