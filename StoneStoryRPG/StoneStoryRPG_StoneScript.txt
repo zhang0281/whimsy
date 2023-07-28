@@ -46,27 +46,10 @@ import UI/BetterInfo2
 
 // debug = true
 
-/** 获取弱点 **/
-func getWeakness()
-  ?foe = ＂Vigor＂
-    return ＂Poison＂
-  ?foe = ＂AEther＂
-    return ＂Vigor＂
-  ?foe = ＂Fire＂
-    return ＂AEther＂
-  ?foe = ＂ Ice＂
-    return ＂Fire＂
-  ?foe = ＂ Poison＂
-    return ＂Ice＂
-  return false
-
-func equipWeakness()
-  equipL wand @getWeakness()@ *10 +21
-  equipR shield ah
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
  *  message 需要输出的消息,可以是变量名
-**/
+ **/
 func Print(posY,message)
   >`1,@posY@,#ffc57f,@message@
 /** 拆分字符串
@@ -80,8 +63,32 @@ func breakString(posY,s,atS)
     :
       for i = 0 .. a.Count()-1
         >`1,@posY+i@,#ffc57f,@atS@_@i+1@:@a［i］@
-        //Print(posY+i, a［i］)
 
+/** 获取弱点 **/
+func getWeakness()
+  ?foe = ＂Vigor＂
+    return ＂Poison＂
+  ?foe = ＂AEther＂
+    return ＂Vigor＂
+  ?foe = ＂Fire＂
+    return ＂AEther＂
+  ?foe = ＂ Ice＂
+    return ＂Fire＂
+  ?foe = ＂ Poison＂
+    return ＂Ice＂
+  return false
+/** 装备针对当前敌人弱点的wand(魔杖) **/
+func equipWeakness()
+  equipL wand @getWeakness()@ *10 +21
+  equipR shield ah
+/** 根据传入的bool型变量返回指定颜色
+ *  bool: 指定bool类型变量
+**/
+func getColor(bool)
+  ?bool = true
+    return "#A7D49B"
+  :
+    return "#B5446E"
 /** 在循环后自动回满HP **/
 func loopHealHP(healLO)
   ?hp <= maxhp * LOW_HP_PERSENT
@@ -91,11 +98,29 @@ func loopHealHP(healLO)
   ?needHealToMaxHp = true & 
   ^hp <= maxhp &
   ^foe ! boss
-    ?debug = true
-      >`0,1,needHealToMaxHp
     loadout @healLO@
     ?hp = maxhp
       needHealToMaxHp = false
+/** 在屏幕上显示foe的debuff详情 **/
+func showDebuffDetail()
+  ?foe.debuffs.string
+    var debuffsArr = 
+    ^string.Split(foe.debuffs.string,
+    ^＂,＂,true)
+    for i = 0 .. debuffsArr.Count()-1
+      var debuffArr = 
+      ^string.Split(debuffsArr［i］,＂:＂,true)
+      var e = debuffArr［0］
+      var eName = debuffArr［1］
+      var eLevel = debuffArr［2］
+      var eTime = debuffArr［3］
+      breakString(10+i,eLevel + ＂ ＂
+      ^ + eTime,eName)
+      >`@i*23+1@,1,#ffc57f,＂element＂:@e@
+      >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
+      >`@i*23+1@,3,#ffc57f,＂eLevel＂
+      ^:@eLevel@
+      >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
 
 /** 岩石高地
  *  自动铲石头
@@ -123,7 +148,6 @@ func levelRocky(mainLO,healLO)
       adaptiveDef = foe.buffs.string
       adaptiveDef = string.Split(adaptiveDef,＂:＂,true)［1］
       adaptiveDef = string.Split(adaptiveDef,＂adaptive_defense_＂,true)［0］
-      >`0,5,@adaptiveDef@
     ?adaptiveDef
       ?adaptiveDef = Poison
         equipL wand Vigor *10 +21
@@ -190,12 +214,11 @@ func levelForest(mainLO,healLO)
 **/
 func levelHalls(mainLO,healLO)
   ?loc = halls
-    loadout @mainLO@
+    equipWeakness()
     loopHealHP(healLO)
     ?foe = immune_to_physical
-      // equipL wand Vigor
-      // equipR shield ah
-      equipWeakness()
+      equipL wand Vigor
+      equipR shield ah
     /*
     如果是召唤boss,用3秒的冰驽
     如果还在打large_ghost,等7s,如果还是large_ghost,再来3s
@@ -220,9 +243,7 @@ func levelHalls(mainLO,healLO)
           ?foe = large_ghost
             ghostBossFlag = true
     ?debug = true
-      >`1,8,timer:@timer@,
-      ^timer2:@timer2@,
-      ^ghostBossFlag:@ghostBossFlag@
+      >`1,8,@getColor(ghostBossFlag)@,timer:@timer@,timer2:@timer2@
 
   ?loc = undead_crypt_boss_harder
     equipL wand Vigor
@@ -234,7 +255,7 @@ func levelHalls(mainLO,healLO)
 **/
 func levelMine(mainLO,healLO)
   ?loc = mine
-    loadout @mainLO@
+    equipWeakness()
     ?foe = boss
       loadout 5
     loopHealHP(healLO)
@@ -374,8 +395,6 @@ func bladeMission400kDMG()
   ^pickup.distance >= 20 &
   ^harvest.distance >= 20
     var debuffStr = foe.debuffs.string
-    // >`0,2,foe.count:@foe.count@
-    // breakString(3,debuffStr,＂debuffs＂)
     ?string.IndexOf(debuffStr,
       ^＂debuff_damage:1＂) = -1&
       ^ foe ! immune_to_debuff_damage &
@@ -402,24 +421,8 @@ func bladeMission400kDMG()
       equipL hammer *10 +21
       equipR shield ah
 
-    // ?foe.debuffs.string
-    //   var debuffsArr = 
-    //   ^string.Split(foe.debuffs.string,
-    //   ^＂,＂,true)
-    //   for i = 0 .. debuffsArr.Count()-1
-    //     var debuffArr = 
-    //     ^string.Split(debuffsArr［i］,＂:＂,true)
-    //     var e = debuffArr［0］
-    //     var eName = debuffArr［1］
-    //     var eLevel = debuffArr［2］
-    //     var eTime = debuffArr［3］
-    //     breakString(10+i,eLevel + ＂ ＂
-    //     ^ + eTime,eName)
-    //     >`@i*23+1@,1,#ffc57f,＂element＂:@e@
-    //     >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
-    //     >`@i*23+1@,3,#ffc57f,＂eLevel＂
-    //     ^:@eLevel@
-    //     >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
+    ?debug = true
+      showDebuffDetail()
 /** 使用面具的主动能力 **/
 func useMask()
   ?foe = boss & 
@@ -473,15 +476,13 @@ func showInfo()
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
 
-  >c-42,11,Heal@maxhp * LOW_HP_PERSENT@:
-  ^@hp <= maxhp * LOW_HP_PERSENT@
+  >c-25,11,@getColor(hp <= maxhp * LOW_HP_PERSENT)@,@maxhp * LOW_HP_PERSENT@
+  >c-42,11,@getColor(needHealToMaxHp)@,NeedHealToMaxHp
 
-  >c-42,10,NeedHealToMaxHp:
-  ^@needHealToMaxHp@
 
   myUtils.ShowTimer(10, 1)
-  myUtils.ShowTimeStats(60, 1)
-  myUtils.ShowFoesBar(19, 1, 30, true)
+  myUtils.ShowTimeStats(72, 1)
+  myUtils.ShowFoesBar(20, 1, 30, true)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 显示宝箱位置 **/
 func freeChest()
