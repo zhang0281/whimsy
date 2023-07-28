@@ -70,7 +70,8 @@ func breakString(posY,s,atS)
 
 /** 在循环后自动回满HP **/
 func loopHealHP(healLO)
-  // >`0,1,@healLO@
+  ?hp <= maxhp * LOW_HP_PERSENT
+    loadout @healLO@
   ?foe = boss
     needHealToMaxHp = true
   ?needHealToMaxHp = true & 
@@ -114,8 +115,7 @@ func levelRocky(mainLO,healLO)
 func levelDeadwood(mainLO,healLO,phyLO)
   ?loc = deadwood
     loadout @mainLO@
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
+    loopHealHP(healLO)
     // 魔免怪加载近战
     ?foe = immune_to_ranged
       loadout @phyLO@
@@ -123,7 +123,8 @@ func levelDeadwood(mainLO,healLO,phyLO)
     ?harvest = Tree
       equip hatchet
     ?foe = wasp
-      loadout 4
+      equipL wand ice
+      equipR shield ah
     ?foe = boss & foe = phase2
       equipL war hammer *10 +21
       equipR sword Vigor *10 +21
@@ -135,11 +136,10 @@ func levelDeadwood(mainLO,healLO,phyLO)
 func levelCaves(mainLO,healLO)
   ?loc = caves
     loadout @mainLO@
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
     loopHealHP(healLO)
     ?foe = tiny_spider
-      loadout 4
+      equipL wand ice
+      equipR shield ah
 /** 蘑菇森林
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
@@ -147,11 +147,10 @@ func levelCaves(mainLO,healLO)
 func levelForest(mainLO,healLO)
   ?loc = forest
     loadout @mainLO@
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
     loopHealHP(healLO)
     ?foe = ant
-      loadout 4
+      equipL wand ice
+      equipR shield ah
 /** 亡者之殿
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
@@ -165,20 +164,16 @@ var timer2 = 7*30
   ghostBossFlag = false
   timer = 3*30
   timer2 = 7*30
-func levelHalls(mainLO,healLO,magicLO)
+func levelHalls(mainLO,healLO)
   ?loc = halls
     loadout @mainLO@
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
     loopHealHP(healLO)
     ?foe = immune_to_physical
-      loadout @magicLO@
-      ?foe = large_ghost
-        equipL wand Vigor
-        equipR shield ah
+      equipL wand Vigor
+      equipR shield ah
     /*
-    如果是召唤boss,用7秒的冰驽
-    如果还在打large_ghost,等10s,如果还是large_ghost,再来7s
+    如果是召唤boss,用3秒的冰驽
+    如果还在打large_ghost,等7s,如果还是large_ghost,再来3s
     */
     ?foe = ghost_tomb &
       ^ foe = boss &
@@ -217,8 +212,6 @@ func levelMine(mainLO,healLO)
     loadout @mainLO@
     ?foe = boss
       loadout 5
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
     loopHealHP(healLO)
     ?(foe = fluff | foe = explode) &
     ^ foe.distance <= 5
@@ -230,8 +223,6 @@ func levelMine(mainLO,healLO)
 func levelIcy(mainLO,healLO)
   ?loc = icy
     loadout @mainLO@
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
     loopHealHP(healLO)
 /** 神庙
  *  mainLO: 主Loadout
@@ -241,14 +232,13 @@ func levelIcy(mainLO,healLO)
 func levelTemple(mainLO,healLO,magicLO)
   ?loc = temple
     loadout @mainLO@
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
     loopHealHP(healLO)
     // 魔免怪加载近战
     ?foe = immune_to_Vigor
       loadout @magicLO@
     ?foe = flying_serpent
-      loadout 4
+      equipL wand ice
+      equipR shield ah
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -477,7 +467,7 @@ levelRocky(MAIN_LO,HEAL_LO)
 levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
 levelCaves(MAIN_LO,HEAL_LO)
 levelForest(MAIN_LO,HEAL_LO)
-levelHalls(MAIN_LO,HEAL_LO,MAGIC_LO)
+levelHalls(MAIN_LO,HEAL_LO)
 levelMine(MAIN_LO,HEAL_LO)
 levelIcy(MAIN_LO,HEAL_LO)
 levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
