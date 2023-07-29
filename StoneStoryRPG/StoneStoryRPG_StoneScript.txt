@@ -86,7 +86,7 @@ func equipWeakness()
 **/
 func getColor(bool)
   ?bool = true
-    return ＂#A7D49B＂
+    return ＂#37FF8B＂
   :
     return ＂#B5446E＂
 /** 在循环后自动回满HP **/
