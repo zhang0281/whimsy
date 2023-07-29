@@ -21,7 +21,7 @@ import UI/BetterInfo2
 
 /** 预设变量 **/
 ?loc.begin
-  var freeChestTracker = 
+  var freeChestTracker =
   ^import UI/FreeChestTracker
   var myUtils = new UI/OkamiroyUtils
   var MAIN_LO = 2
@@ -86,16 +86,16 @@ func equipWeakness()
 **/
 func getColor(bool)
   ?bool = true
-    return "#A7D49B"
+    return ＂#A7D49B＂
   :
-    return "#B5446E"
+    return ＂#B5446E＂
 /** 在循环后自动回满HP **/
 func loopHealHP(healLO)
   ?hp <= maxhp * LOW_HP_PERSENT
     loadout @healLO@
   ?foe = boss
     needHealToMaxHp = true
-  ?needHealToMaxHp = true & 
+  ?needHealToMaxHp = true &
   ^hp <= maxhp &
   ^foe ! boss
     loadout @healLO@
@@ -104,11 +104,11 @@ func loopHealHP(healLO)
 /** 在屏幕上显示foe的debuff详情 **/
 func showDebuffDetail()
   ?foe.debuffs.string
-    var debuffsArr = 
+    var debuffsArr =
     ^string.Split(foe.debuffs.string,
     ^＂,＂,true)
     for i = 0 .. debuffsArr.Count()-1
-      var debuffArr = 
+      var debuffArr =
       ^string.Split(debuffsArr［i］,＂:＂,true)
       var e = debuffArr［0］
       var eName = debuffArr［1］
@@ -140,7 +140,7 @@ func levelRocky(mainLO,healLO)
       ^getWeakness() ! false &
       ^string.IndexOf(foe.buffs.string,
       ^＂buff_protection＂) = -1
-      ?item.GetCooldown(＂shield dash *10＂) <= 0 
+      ?item.GetCooldown(＂shield dash *10＂) <= 0
         equipR shield dash *10
         ?item.CanActivate(＂shield dash *10＂)
           activate R
@@ -210,11 +210,11 @@ func levelForest(mainLO,healLO)
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
  *  magicLO: 魔法伤害Loadout
- *  ? *>15 : use crossbow 3sec. 
+ *  ? *>15 : use crossbow 3sec.
 **/
 func levelHalls(mainLO,healLO)
   ?loc = halls
-    equipWeakness()
+    loadout @mainLO@
     loopHealHP(healLO)
     ?foe = immune_to_physical
       equipL wand Vigor
@@ -296,9 +296,9 @@ func steal()
     ^ loc = undead_crypt_boss_harder
     return false
 
-  ?item.GetCooldown(＂skeleton_arm＂) <= 0 & 
+  ?item.GetCooldown(＂skeleton_arm＂) <= 0 &
   ^(foe.hp + foe.armor) < 20 &
-  ^foe ! immune_to_physical & 
+  ^foe ! immune_to_physical &
   ^foe ! boss &
   ^pickup.distance >= 20 &
   ^harvest.distance >= 20
@@ -310,13 +310,13 @@ func steal()
  *  blade_used_monsters
 **/
 func OnRstBtnPressed()
-  var monsArr = 
+  var monsArr =
   ^string.Split(
   ^storage.Get(＂blade_used_monsters＂))
   monsArr.RemoveAt(monsArr.IndexOf(＂青铜守卫＂))
   monsArr.RemoveAt(monsArr.IndexOf(＂火元素＂))
 
-  storage.Set(＂blade_used_monsters＂, 
+  storage.Set(＂blade_used_monsters＂,
   ^string.Join(＂ ＂, monsArr))
   //storage.Delete(＂blade_used_monsters＂)
 
@@ -357,9 +357,9 @@ func bladeMission35kill()
   foeName = foe.name
 
   ?foe &
-  ^foe.distance <= 20 
+  ^foe.distance <= 20
     ?storage.Has(＂blade_used_monsters＂)
-      monsArr = 
+      monsArr =
       ^string.Split(
       ^storage.Get(＂blade_used_monsters＂),true)
       ? ! monsArr.Contains(foeName)
@@ -369,7 +369,7 @@ func bladeMission35kill()
       ?useBlade() = true
         monsArr.Add(foeName)
     ?monsArr ! ［］
-      storage.Set(＂blade_used_monsters＂, 
+      storage.Set(＂blade_used_monsters＂,
       ^string.Join(＂ ＂, monsArr))
 
   breakString(10,foe.name,@nowMon)
@@ -416,7 +416,7 @@ func bladeMission400kDMG()
     :?string.IndexOf(debuffStr,
       ^＂stun:1＂) = -1 &
       ^ foe ! immune_to_stun &
-      ^ foe ! immune_to_physical & 
+      ^ foe ! immune_to_physical &
       ^ loc ! mine & foe ! explode
       equipL hammer *10 +21
       equipR shield ah
@@ -425,7 +425,7 @@ func bladeMission400kDMG()
       showDebuffDetail()
 /** 使用面具的主动能力 **/
 func useMask()
-  ?foe = boss & 
+  ?foe = boss &
     ^(loc = temple)
     return false
 
@@ -471,7 +471,7 @@ func showInfo()
     ^ loc = bronze_mine |
     ^ loc = cross_bridge
     return false
-  
+
   ?debug = true
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
