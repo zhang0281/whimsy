@@ -103,24 +103,30 @@ func loopHealHP(healLO)
       needHealToMaxHp = false
 /** 在屏幕上显示foe的debuff详情 **/
 func showDebuffDetail()
-  ?foe.debuffs.string
-    var debuffsArr =
-    ^string.Split(foe.debuffs.string,
-    ^＂,＂,true)
-    for i = 0 .. debuffsArr.Count()-1
-      var debuffArr =
-      ^string.Split(debuffsArr［i］,＂:＂,true)
-      var e = debuffArr［0］
-      var eName = debuffArr［1］
-      var eLevel = debuffArr［2］
-      var eTime = debuffArr［3］
-      breakString(10+i,eLevel + ＂ ＂
-      ^ + eTime,eName)
-      >`@i*23+1@,1,#ffc57f,＂element＂:@e@
-      >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
-      >`@i*23+1@,3,#ffc57f,＂eLevel＂
-      ^:@eLevel@
-      >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
+  ? ! foe.debuffs.string
+    return false
+  var debuffsArr = 
+  ^string.Split(
+    ^foe.debuffs.string,
+    ^＂,＂,
+    ^true
+  ^)
+  for i = 0 .. debuffsArr.Count()-1
+    var debuffArr = 
+    ^string.Split(
+      ^debuffsArr［i］,
+      ^＂:＂,
+      ^true
+    ^)
+    var e = debuffArr［0］
+    var eName = debuffArr［1］
+    var eLevel = debuffArr［2］
+    var eTime = debuffArr［3］
+    breakString(10+i,eLevel + ＂ ＂ + eTime,eName)
+    >`@i*23+1@,1,#ffc57f,＂element＂:@e@
+    >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
+    >`@i*23+1@,3,#ffc57f,＂eLevel＂:@eLevel@
+    >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
 
 /** 岩石高地
  *  自动铲石头
@@ -128,49 +134,49 @@ func showDebuffDetail()
  *  healLO: 治疗Loadout
 **/
 func levelRocky(mainLO,healLO)
-  ?loc = rocky
-    ?foe = phase3
-      LOW_HP_PERSENT = 0.95
-    loadout @mainLO@
-    // 自动铲石头
-    ?harvest = Boulder &
-    ^ harvest.distance < 30
-      equip shovel
-    ?foe = boss &
-    ^getWeakness() ! false &
-    ^string.IndexOf(foe.buffs.string,
-    ^＂buff_protection＂) = -1
-      equipWeakness()
-      ?item.GetCooldown(＂shield dash *10＂) <= 0
-        equipR shield dash *10
-        ?item.CanActivate(＂shield dash *10＂)
-          activate R
-    ?foe.buffs.string
-      adaptiveDef = foe.buffs.string
-      adaptiveDef = string.Split(adaptiveDef,＂:＂,true)［1］
-      adaptiveDef = string.Split(adaptiveDef,＂adaptive_defense_＂,true)［0］
-    :
-      adaptiveDef = ""
+  ?loc ! rocky
+    return false
+  ?foe = phase3
+    LOW_HP_PERSENT = 0.95
+  loadout @mainLO@
+  // 自动铲石头
+  ?harvest = Boulder &
+  ^harvest.distance < 30
+    equip shovel
+  ?foe = boss &
+  ^getWeakness() ! false &
+  ^string.IndexOf(foe.buffs.string,＂buff_protection＂) = -1
+    equipWeakness()
+    ?item.GetCooldown(＂shield dash *10＂) <= 0
+      equipR shield dash *10
+      ?item.CanActivate(＂shield dash *10＂)
+        activate R
+  ?foe.buffs.string
+    adaptiveDef = foe.buffs.string
+    adaptiveDef = string.Split(adaptiveDef,＂:＂,true)［1］
+    adaptiveDef = string.Split(adaptiveDef,＂adaptive_defense_＂,true)［0］
+  :
+    adaptiveDef = ""
 
-    ?adaptiveDef = Poison
-      equipL wand Vigor *10 +21
-      equipR shield ah
-    :?adaptiveDef = Vigor
-      equipL wand AEther *10 +21
-      equipR shield ah
-    :?adaptiveDef = AEther
-      equipL wand Fire *10 +21
-      equipR shield ah
-    :?adaptiveDef = Fire
-      equipL wand Ice *10 +21
-      equipR shield ah
-    :?adaptiveDef = Ice
-      equipL wand Poison *10 +21
-      equipR shield ah
-    ?foe.state = 115 & foe.time >= 60
-      equipL mind stone
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
+  ?adaptiveDef = Poison
+    equipL wand Vigor *10 +21
+    equipR shield ah
+  :?adaptiveDef = Vigor
+    equipL wand AEther *10 +21
+    equipR shield ah
+  :?adaptiveDef = AEther
+    equipL wand Fire *10 +21
+    equipR shield ah
+  :?adaptiveDef = Fire
+    equipL wand Ice *10 +21
+    equipR shield ah
+  :?adaptiveDef = Ice
+    equipL wand Poison *10 +21
+    equipR shield ah
+  ?foe.state = 115 & foe.time >= 60
+    equipL mind stone
+  ?hp <= maxhp * LOW_HP_PERSENT
+    loadout @healLO@
 /** 枯木峡谷
  *  自动砍树
  *  mainLO: 主Loadout
@@ -178,42 +184,45 @@ func levelRocky(mainLO,healLO)
  *  phyLO: 物理伤害Loadout
 **/
 func levelDeadwood(mainLO,healLO,phyLO)
-  ?loc = deadwood
-    equipWeakness()
-    loopHealHP(healLO)
-    // 魔免怪加载近战
-    ?foe = immune_to_ranged
-      loadout @phyLO@
-    // 自动砍树
-    ?harvest = Tree
-      equip hatchet
-    ?foe = wasp
-      equipL wand ice
-      equipR shield ah
-    ?foe = boss & foe = phase2
-      equipL war hammer *10 +21
-      equipR sword Vigor *10 +21
+  ?loc ! deadwood
+    return false
+  equipWeakness()
+  loopHealHP(healLO)
+  // 魔免怪加载近战
+  ?foe = immune_to_ranged
+    loadout @phyLO@
+  // 自动砍树
+  ?harvest = Tree
+    equip hatchet
+  ?foe = wasp
+    equipL wand ice
+    equipR shield ah
+  ?foe = boss & foe = phase2
+    equipL war hammer *10 +21
+    equipR sword Vigor *10 +21
 /** 恐怖洞窟
  *  在打完boss之后补满血
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
 **/
 func levelCaves(mainLO,healLO)
-  ?loc = caves
-    loadout @mainLO@
-    loopHealHP(healLO)
-    ?foe = tiny_spider
-      equipWeakness()
+  ?loc ! caves
+    return false
+  loadout @mainLO@
+  loopHealHP(healLO)
+  ?foe = tiny_spider
+    equipWeakness()
 /** 蘑菇森林
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
 **/
 func levelForest(mainLO,healLO)
-  ?loc = forest
-    loadout @mainLO@
-    loopHealHP(healLO)
-    ?foe = ant
-      equipWeakness()
+  ?loc ! forest
+    return false
+  loadout @mainLO@
+  loopHealHP(healLO)
+  ?foe = ant
+    equipWeakness()
 /** 亡者之殿
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
@@ -221,37 +230,38 @@ func levelForest(mainLO,healLO)
  *  ? *>15 : use crossbow 3sec.
 **/
 func levelHalls(mainLO,healLO)
-  ?loc = halls
-    loadout @mainLO@
-    loopHealHP(healLO)
-    ?foe = immune_to_physical
-      equipL wand Vigor
-      equipR shield ah
-    /*
-    如果是召唤boss,用3秒的冰驽
-    如果还在打large_ghost,等7s,如果还是large_ghost,再来3s
-    */
-    ?foe = ghost_tomb &
-      ^ foe = boss &
-      ^ foe = spawner
-      timer = 3*30
-      ghostBossFlag = true
+  ?loc ! halls
+    return false
+  loadout @mainLO@
+  loopHealHP(healLO)
+  ?foe = immune_to_physical
+    equipL wand Vigor
+    equipR shield ah
+  /*
+  如果是召唤boss,用3秒的冰驽
+  如果还在打large_ghost,等7s,如果还是large_ghost,再来3s
+  */
+  ?foe = ghost_tomb &
+  ^foe = boss &
+  ^foe = spawner
+    timer = 3*30
+    ghostBossFlag = true
 
-    ?timer > 0 & ghostBossFlag = true
-      equip crossbow ice D *10 +21
-      timer--
-    :
-      timer = 3*30
-      ghostBossFlag = false
-      ?foe = large_ghost
-        ?timer2 > 0 & ghostBossFlag = false
-          timer2--
-        :
-          timer2 = 7*30
-          ?foe = large_ghost
-            ghostBossFlag = true
-    ?debug = true
-      >`1,8,@getColor(ghostBossFlag)@,timer:@timer@,timer2:@timer2@
+  ?timer > 0 & ghostBossFlag = true
+    equip crossbow ice D *10 +21
+    timer--
+  :
+    timer = 3*30
+    ghostBossFlag = false
+    ?foe = large_ghost
+      ?timer2 > 0 & ghostBossFlag = false
+        timer2--
+      :
+        timer2 = 7*30
+        ?foe = large_ghost
+          ghostBossFlag = true
+  ?debug = true
+    >`1,8,@getColor(ghostBossFlag)@,timer:@timer@,timer2:@timer2@
 
   ?loc = undead_crypt_boss_harder
     equipL wand Vigor
@@ -262,36 +272,39 @@ func levelHalls(mainLO,healLO)
  *  healLO: 治疗Loadout
 **/
 func levelMine(mainLO,healLO)
-  ?loc = mine
-    equipWeakness()
-    ?foe = boss
-      loadout 5
-    loopHealHP(healLO)
-    ?(foe = fluff | foe = explode) &
-    ^ foe.distance <= 5
-      equipL mind stone
+  ?loc ! mine
+    return false
+  equipWeakness()
+  ?foe = boss
+    loadout 5
+  loopHealHP(healLO)
+  ?(foe = fluff | foe = explode) &
+  ^foe.distance <= 5
+    equipL mind stone
 /** 不融山
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
 **/
 func levelIcy(mainLO,healLO)
-  ?loc = icy
-    equipWeakness()
-    loopHealHP(healLO)
+  ?loc ! icy
+    return false
+  equipWeakness()
+  loopHealHP(healLO)
 /** 神庙
  *  mainLO: 主Loadout
  *  healLO: 治疗Loadout
  *  magicLO: 魔法伤害Loadout
 **/
 func levelTemple(mainLO,healLO,magicLO)
-  ?loc = temple
+  ?loc ! temple
+    return false
+  equipWeakness()
+  loopHealHP(healLO)
+  // 魔免怪加载近战
+  ?foe = immune_to_Vigor
+    loadout @magicLO@
+  ?foe = flying_serpent
     equipWeakness()
-    loopHealHP(healLO)
-    // 魔免怪加载近战
-    ?foe = immune_to_Vigor
-      loadout @magicLO@
-    ?foe = flying_serpent
-      equipWeakness()
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -300,16 +313,16 @@ func levelTemple(mainLO,healLO,magicLO)
  *  装备并且使用骷髅手臂
 **/
 func steal()
-  ?foe = boss & loc = deadwood & foe = phase2 |
-    ^ loc = undead_crypt_boss_harder
+  ?(foe=boss & loc=deadwood & foe=phase2) |
+  ^loc = undead_crypt_boss_harder |
+  ^pickup.distance >= 20 |
+  ^harvest.distance >= 20
     return false
 
   ?item.GetCooldown(＂skeleton_arm＂) <= 0 &
   ^(foe.hp + foe.armor) < 20 &
   ^foe ! immune_to_physical &
-  ^foe ! boss &
-  ^pickup.distance >= 20 &
-  ^harvest.distance >= 20
+  ^foe ! boss
     equip skeleton arm
     ?item.CanActivate(＂skeleton_arm＂)
        activate R
@@ -318,14 +331,11 @@ func steal()
  *  blade_used_monsters
 **/
 func OnRstBtnPressed()
-  var monsArr =
-  ^string.Split(
-  ^storage.Get(＂blade_used_monsters＂))
+  var monsArr = string.Split(storage.Get(＂blade_used_monsters＂))
   monsArr.RemoveAt(monsArr.IndexOf(＂青铜守卫＂))
   monsArr.RemoveAt(monsArr.IndexOf(＂火元素＂))
 
-  storage.Set(＂blade_used_monsters＂,
-  ^string.Join(＂ ＂, monsArr))
+  storage.Set(＂blade_used_monsters＂, string.Join(＂ ＂, monsArr))
   //storage.Delete(＂blade_used_monsters＂)
 
 /** 添加重置按钮 **/
@@ -337,15 +347,15 @@ func addRstBtn()
     rstBtn.SetPressed(OnRstBtnPressed)
 /** 使用堕神大剑的主动能力 **/
 func useBlade()
-  ?foe = boss & loc = deadwood & foe = phase2 |
-    ^ loc = undead_crypt_boss_harder
+  ?(foe=boss & loc=deadwood & foe=phase2) |
+  ^loc = undead_crypt_boss_harder |
+  ^pickup.distance >= 20 |
+  ^harvest.distance >= 20
     return false
 
   ?item.GetCooldown(＂blade＂) <= 0 &
   ^foe.count > 5 &
-  ^foe.distance <= 20 &
-  ^pickup.distance >= 20 &
-  ^harvest.distance >= 20
+  ^foe.distance <= 20
     equip blade
     ?item.CanActivate(＂blade＂)
       activate R
@@ -364,12 +374,9 @@ func bladeMission35kill()
   monsArr = ［］
   foeName = foe.name
 
-  ?foe &
-  ^foe.distance <= 20
+  ?foe & foe.distance <= 20
     ?storage.Has(＂blade_used_monsters＂)
-      monsArr =
-      ^string.Split(
-      ^storage.Get(＂blade_used_monsters＂),true)
+      monsArr = string.Split(storage.Get(＂blade_used_monsters＂),true)
       ? ! monsArr.Contains(foeName)
         ?useBlade() = true
           monsArr.Add(foeName)
@@ -377,72 +384,61 @@ func bladeMission35kill()
       ?useBlade() = true
         monsArr.Add(foeName)
     ?monsArr ! ［］
-      storage.Set(＂blade_used_monsters＂,
-      ^string.Join(＂ ＂, monsArr))
+      storage.Set(＂blade_used_monsters＂,string.Join(＂ ＂, monsArr))
 
   breakString(10,foe.name,@nowMon)
-  breakString(11,
-  ^storage.Get(＂blade_used_monsters＂),
-  ^＂monsNum＂ + string.Split(
-  ^storage.Get(＂blade_used_monsters＂)).Count()
-  ^ + ＂/35＂)
+  breakString(11,storage.Get(＂blade_used_monsters＂),＂monsNum＂ + string.Split(storage.Get(＂blade_used_monsters＂)).Count() + ＂/35＂)
 /** 完成400000重击伤害任务 **/
 func bladeMission400kDMG()
-  ?(foe=boss & loc=deadwood & foe=phase2) |
-    ^ hp <= maxhp * LOW_HP_PERSENT |
-    ^ foe = immune_to_ranged |
-    ^ loc = undead_crypt_boss_harder |
-    ^ (loc=rocky & foe=boss &
-    ^ foe.state = 115 & foe.time >= 60) |
-    ^ ghostBossFlag = true |
-    ^ needHealToMaxHp = true |
-    ^ string.IndexOf(foe.buffs.string,
-    ^ ＂buff_protection＂) ! -1
+  ? ! foe | 
+  ^pickup.distance >= 20 |
+  ^harvest.distance >= 20 |
+  ^(foe=boss & loc=deadwood & foe=phase2) |
+  ^ hp <= maxhp * LOW_HP_PERSENT |
+  ^ foe = immune_to_ranged |
+  ^ loc = undead_crypt_boss_harder |
+  ^ (loc=rocky & foe=boss &
+  ^ foe.state = 115 & foe.time >= 60) |
+  ^ ghostBossFlag = true |
+  ^ needHealToMaxHp = true |
+  ^ string.IndexOf(foe.buffs.string, ＂buff_protection＂) ! -1
     return false
 
-  ?foe &
-  ^pickup.distance >= 20 &
-  ^harvest.distance >= 20
-    var debuffStr = foe.debuffs.string
-    ?string.IndexOf(debuffStr,
-      ^＂debuff_damage:1＂) = -1&
-      ^ foe ! immune_to_debuff_damage &
-      ^ foe ! immune_to_ranged
-      equipL wand poison
-      equipR shield ah
-    :?string.IndexOf(debuffStr,
-      ^＂debuff_chill:6＂) = -1&
-      ^ foe ! immune_to_debuff_chill &
-      ^ foe ! immune_to_ranged
-      equipL wand ice
-      equipR shield ah
-    :?string.IndexOf(debuffStr,
-      ^＂debuff_dot:1＂) = -1&
-      ^ foe ! immune_to_debuff_dot &
-      ^ foe ! immune_to_ranged
-      equipL wand fire
-      equipR shield ah
-    :?string.IndexOf(debuffStr,
-      ^＂stun:1＂) = -1 &
-      ^ foe ! immune_to_stun &
-      ^ foe ! immune_to_physical &
-      ^ loc ! mine & foe ! explode
-      equipL hammer *10 +21
-      equipR shield ah
+  var debuffStr = foe.debuffs.string
+  ?string.IndexOf(debuffStr,＂debuff_damage:1＂) = -1&
+    ^ foe ! immune_to_debuff_damage &
+    ^ foe ! immune_to_ranged
+    equipL wand poison
+    equipR shield ah
+  :?string.IndexOf(debuffStr,＂debuff_chill:6＂) = -1&
+    ^ foe ! immune_to_debuff_chill &
+    ^ foe ! immune_to_ranged
+    equipL wand ice
+    equipR shield ah
+  :?string.IndexOf(debuffStr,＂debuff_dot:1＂) = -1&
+    ^ foe ! immune_to_debuff_dot &
+    ^ foe ! immune_to_ranged
+    equipL wand fire
+    equipR shield ah
+  :?string.IndexOf(debuffStr,＂stun:1＂) = -1 &
+    ^ foe ! immune_to_stun &
+    ^ foe ! immune_to_physical &
+    ^ loc ! mine & foe ! explode
+    equipL hammer *10 +21
+    equipR shield ah
 
-    ?debug = true
-      showDebuffDetail()
+  ?debug = true
+    showDebuffDetail()
 /** 使用面具的主动能力 **/
 func useMask()
-  ?foe = boss &
-    ^(loc = temple)
+  ?(foe = boss & loc = temple) |
+  ^pickup.distance >= 20 |
+  ^harvest.distance >= 20
     return false
 
   ?item.GetCooldown(＂mask＂) <= 0 &
   ^foe.count > 0 &
-  ^foe.distance <= 20 &
-  ^pickup.distance >= 20 &
-  ^harvest.distance >= 20
+  ^foe.distance <= 20
     equip mask
     ?item.CanActivate(＂mask＂)
       activate R
