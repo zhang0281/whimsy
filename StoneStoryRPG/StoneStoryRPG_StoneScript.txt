@@ -525,15 +525,31 @@ func runFast()
     equipL triskelion stone
     equipR shield ah
 /** 显示指定道具的冷却时间 **/
-func getItemIsCanUse(posX, posY, itemStr)
+func getItemIsCanUse(posX, posY, itemStr, desp)
   ?item.GetCooldown(itemStr) <=0
     >`@posX@,@posY@,
       ^@getColor(true)@,
-      ^@itemStr@ : RDY
+      ^@desp@ RDY
   :
     >`@posX@,@posY@,
       ^@getColor(false)@,
-      ^@itemStr@ : @item.GetCooldown(itemStr)@
+      ^@desp@ @item.GetCooldown(itemStr) / 30@s
+func showActivateWindow()
+  var activateWindow = ascii
+╔ CD显示  ╗
+║       ║
+║       ║
+║       ║
+║       ║
+║       ║
+╚═══════╝
+asciiend
+  >`19,1,#white,@activateWindow@
+  getItemIsCanUse(20,2,＂shield dash *10＂, 冲刺盾)
+  getItemIsCanUse(20,3,＂mind stone＂, 思维石)
+  getItemIsCanUse(20,4,＂skeleton_arm＂, 骷髅手)
+  getItemIsCanUse(20,5,＂blade＂, 堕神剑)
+  getItemIsCanUse(20,6,＂mask＂, ＂面 具＂)
 /** 显示自定义变量的值 **/
 func showInfo()
   ?loc = undead_crypt_intro |
@@ -547,12 +563,8 @@ func showInfo()
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
     breakString(13,foe.buffs.string,＂buffs＂)
-    
-  getItemIsCanUse(19,3,＂shield dash *10＂)
-  getItemIsCanUse(19,4,＂mind stone＂)
-  getItemIsCanUse(19,5,＂skeleton_arm＂)
-  getItemIsCanUse(19,6,＂blade＂)
-  getItemIsCanUse(19,7,＂mask＂)
+  
+  showActivateWindow()
 
   >c-25,11,
     ^@getColor(hp <= maxhp * LOW_HP_PERSENT)@,
@@ -564,7 +576,7 @@ func showInfo()
 
   myUtils.ShowTimer(10, 1)
   myUtils.ShowTimeStats(72, 1)
-  myUtils.ShowFoesBar(20, 1, 30, true)
+  myUtils.ShowFoesBar(30, 1, 25, true)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 显示宝箱位置 **/
 func freeChest()
