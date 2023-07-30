@@ -44,7 +44,7 @@ import UI/BetterInfo2
   timer = 3*30
   timer2 = 7*30
 
-// debug = true
+debug = false
 
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
@@ -131,15 +131,16 @@ func levelRocky(mainLO,healLO)
   ?loc = rocky
     ?foe = phase3
       LOW_HP_PERSENT = 0.95
-    equipWeakness()
+    loadout @mainLO@
     // 自动铲石头
     ?harvest = Boulder &
     ^ harvest.distance < 30
       equip shovel
     ?foe = boss &
-      ^getWeakness() ! false &
-      ^string.IndexOf(foe.buffs.string,
-      ^＂buff_protection＂) = -1
+    ^getWeakness() ! false &
+    ^string.IndexOf(foe.buffs.string,
+    ^＂buff_protection＂) = -1
+      equipWeakness()
       ?item.GetCooldown(＂shield dash *10＂) <= 0
         equipR shield dash *10
         ?item.CanActivate(＂shield dash *10＂)
@@ -148,17 +149,23 @@ func levelRocky(mainLO,healLO)
       adaptiveDef = foe.buffs.string
       adaptiveDef = string.Split(adaptiveDef,＂:＂,true)［1］
       adaptiveDef = string.Split(adaptiveDef,＂adaptive_defense_＂,true)［0］
-    ?adaptiveDef
-      ?adaptiveDef = Poison
-        equipL wand Vigor *10 +21
-      ?adaptiveDef = Vigor
-        equipL wand AEther *10 +21
-      ?adaptiveDef = AEther
-        equipL wand Fire *10 +21
-      ?adaptiveDef = Fire
-        equipL wand Ice *10 +21
-      ?adaptiveDef = Ice
-        equipL wand Poison *10 +21
+    :
+      adaptiveDef = ""
+
+    ?adaptiveDef = Poison
+      equipL wand Vigor *10 +21
+      equipR shield ah
+    :?adaptiveDef = Vigor
+      equipL wand AEther *10 +21
+      equipR shield ah
+    :?adaptiveDef = AEther
+      equipL wand Fire *10 +21
+      equipR shield ah
+    :?adaptiveDef = Fire
+      equipL wand Ice *10 +21
+      equipR shield ah
+    :?adaptiveDef = Ice
+      equipL wand Poison *10 +21
       equipR shield ah
     ?foe.state = 115 & foe.time >= 60
       equipL mind stone
@@ -385,12 +392,12 @@ func bladeMission400kDMG()
     ^ hp <= maxhp * LOW_HP_PERSENT |
     ^ foe = immune_to_ranged |
     ^ loc = undead_crypt_boss_harder |
-    ^ (loc=rocky & foe=boss |
+    ^ (loc=rocky & foe=boss &
     ^ foe.state = 115 & foe.time >= 60) |
     ^ ghostBossFlag = true |
     ^ needHealToMaxHp = true |
-    ^string.IndexOf(foe.buffs.string,
-    ^＂buff_protection＂) ! -1
+    ^ string.IndexOf(foe.buffs.string,
+    ^ ＂buff_protection＂) ! -1
     return false
 
   ?foe &
@@ -477,6 +484,7 @@ func showInfo()
   ?debug = true
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
+    breakString(13,foe.buffs.string,"buffs")
 
   >c-25,11,@getColor(hp <= maxhp * LOW_HP_PERSENT)@,@maxhp * LOW_HP_PERSENT@
   >c-42,11,@getColor(needHealToMaxHp)@,NeedHealToMaxHp
