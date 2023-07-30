@@ -184,10 +184,10 @@ func levelRocky(mainLO,healLO)
   :?adaptiveDef = Ice
     equipL wand Poison *10 +21
     equipR shield ah
-  ?foe.state = 115 & foe.time >= 60
-    equipL mind stone
   ?hp <= maxhp * LOW_HP_PERSENT
     loadout @healLO@
+  ?foe.state = 115 & foe.time >= 60
+    equipL mind stone
 /** 枯木峡谷
  *  自动砍树
  *  mainLO: 主Loadout
