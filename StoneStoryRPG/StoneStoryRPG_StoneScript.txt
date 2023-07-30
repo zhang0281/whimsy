@@ -160,7 +160,8 @@ func levelRocky(mainLO,healLO)
       ?adaptiveDef = Ice
         equipL wand Poison *10 +21
       equipR shield ah
-
+    ?foe.state = 115 & foe.time >= 60
+      equipL mind stone
     ?hp <= maxhp * LOW_HP_PERSENT
       loadout @healLO@
 /** 枯木峡谷
@@ -384,7 +385,8 @@ func bladeMission400kDMG()
     ^ hp <= maxhp * LOW_HP_PERSENT |
     ^ foe = immune_to_ranged |
     ^ loc = undead_crypt_boss_harder |
-    ^ (loc = rocky & foe = boss) |
+    ^ (loc=rocky & foe=boss |
+    ^ foe.state = 115 & foe.time >= 60) |
     ^ ghostBossFlag = true |
     ^ needHealToMaxHp = true |
     ^string.IndexOf(foe.buffs.string,
@@ -460,7 +462,7 @@ func runFast()
   ?foe.distance > 20 &
   ^ pickup.distance >= 20 &
   ^ harvest.distance >= 20
-    equipL triskelion fuse
+    equipL triskelion stone
     equipR shield ah
 /** 显示自定义变量的值 **/
 func showInfo()
@@ -521,5 +523,5 @@ runFast()
 freeChest()
 // 显示对应的提示信息
 showInfo()
-
+>`0,6,state @foe.state@time @foe.time@
 /** 完毕 **/
