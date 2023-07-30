@@ -136,8 +136,6 @@ func showDebuffDetail()
 func levelRocky(mainLO,healLO)
   ?loc ! rocky
     return false
-  ?foe = phase3
-    LOW_HP_PERSENT = 0.95
   loadout @mainLO@
   // 自动铲石头
   ?harvest = Boulder &
@@ -150,10 +148,10 @@ func levelRocky(mainLO,healLO)
     ^＂buff_protection＂
   ^) = -1
     equipWeakness()
-    ?item.GetCooldown(＂shield dash *10＂) <= 0
-      equipR shield dash *10
-      ?item.CanActivate(＂shield dash *10＂)
-        activate R
+    // ?item.GetCooldown(＂shield dash *10＂) <= 0
+    //   equipR shield dash *10
+    //   ?item.CanActivate(＂shield dash *10＂)
+    //     activate R
   ?foe.buffs.string
     adaptiveDef = foe.buffs.string
     adaptiveDef = string.Split(
@@ -169,21 +167,28 @@ func levelRocky(mainLO,healLO)
   :
     adaptiveDef = ＂＂
 
-  ?adaptiveDef = Poison
-    equipL wand Vigor *10 +21
-    equipR shield ah
-  :?adaptiveDef = Vigor
-    equipL wand AEther *10 +21
-    equipR shield ah
-  :?adaptiveDef = AEther
-    equipL wand Fire *10 +21
-    equipR shield ah
-  :?adaptiveDef = Fire
-    equipL wand Ice *10 +21
-    equipR shield ah
-  :?adaptiveDef = Ice
-    equipL wand Poison *10 +21
-    equipR shield ah
+  ?foe = phase2
+    ?adaptiveDef = Poison
+      equipL wand Vigor *10 +21
+      equipR shield ah
+    :?adaptiveDef = Vigor
+      equipL wand AEther *10 +21
+      equipR shield ah
+    :?adaptiveDef = AEther
+      equipL wand Fire *10 +21
+      equipR shield ah
+    :?adaptiveDef = Fire
+      equipL wand Ice *10 +21
+      equipR shield ah
+    :?adaptiveDef = Ice
+      equipL wand Poison *10 +21
+      equipR shield ah
+  ?foe = phase3
+    equip Crossbow Ice *10 +21
+    ?adaptiveDef = Ice
+      equip Crossbow AEther *10 +21
+    :?adaptiveDef = AEther
+      equip Crossbow Ice *10 +21
   ?hp <= maxhp * LOW_HP_PERSENT
     loadout @healLO@
   ?foe.state = 115 & foe.time >= 60
@@ -519,13 +524,22 @@ func runFast()
   ^ harvest.distance >= 20
     equipL triskelion stone
     equipR shield ah
+/** 显示指定道具的冷却时间 **/
+func getItemIsCanUse(posX, posY, itemStr)
+  ?item.GetCooldown(itemStr) <=0
+    >`@posX@,@posY@,
+      ^@getColor(true)@,
+      ^@itemStr@ : RDY
+  :
+    >`@posX@,@posY@,
+      ^@getColor(false)@,
+      ^@itemStr@ : @item.GetCooldown(itemStr)@
 /** 显示自定义变量的值 **/
 func showInfo()
   ?loc = undead_crypt_intro |
     ^ loc = uulaa_shop |
     ^ loc = waterfall |
     ^ loc = deadwood_river |
-    ^ loc = bronze_mine |
     ^ loc = cross_bridge
     return false
 
@@ -533,6 +547,12 @@ func showInfo()
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
     breakString(13,foe.buffs.string,＂buffs＂)
+    
+  getItemIsCanUse(19,3,＂shield dash *10＂)
+  getItemIsCanUse(19,4,＂mind stone＂)
+  getItemIsCanUse(19,5,＂skeleton_arm＂)
+  getItemIsCanUse(19,6,＂blade＂)
+  getItemIsCanUse(19,7,＂mask＂)
 
   >c-25,11,
     ^@getColor(hp <= maxhp * LOW_HP_PERSENT)@,
@@ -583,5 +603,4 @@ runFast()
 freeChest()
 // 显示对应的提示信息
 showInfo()
->`0,6,state @foe.state@time @foe.time@
 /** 完毕 **/
