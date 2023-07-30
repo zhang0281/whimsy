@@ -207,6 +207,9 @@ func levelDeadwood(mainLO,healLO,phyLO)
   // 魔免怪加载近战
   ?foe = immune_to_ranged
     loadout @phyLO@
+    ?ai.idle
+      equipL wand ice *10 +21
+      equip skeleton arm
   // 自动砍树
   ?harvest = Tree
     equip hatchet
