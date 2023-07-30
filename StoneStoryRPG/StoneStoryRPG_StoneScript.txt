@@ -105,14 +105,14 @@ func loopHealHP(healLO)
 func showDebuffDetail()
   ? ! foe.debuffs.string
     return false
-  var debuffsArr = 
+  var debuffsArr =
   ^string.Split(
     ^foe.debuffs.string,
     ^＂,＂,
     ^true
   ^)
   for i = 0 .. debuffsArr.Count()-1
-    var debuffArr = 
+    var debuffArr =
     ^string.Split(
       ^debuffsArr［i］,
       ^＂:＂,
@@ -145,7 +145,10 @@ func levelRocky(mainLO,healLO)
     equip shovel
   ?foe = boss &
   ^getWeakness() ! false &
-  ^string.IndexOf(foe.buffs.string,＂buff_protection＂) = -1
+  ^string.IndexOf(
+    ^foe.buffs.string,
+    ^＂buff_protection＂
+  ^) = -1
     equipWeakness()
     ?item.GetCooldown(＂shield dash *10＂) <= 0
       equipR shield dash *10
@@ -153,10 +156,18 @@ func levelRocky(mainLO,healLO)
         activate R
   ?foe.buffs.string
     adaptiveDef = foe.buffs.string
-    adaptiveDef = string.Split(adaptiveDef,＂:＂,true)［1］
-    adaptiveDef = string.Split(adaptiveDef,＂adaptive_defense_＂,true)［0］
+    adaptiveDef = string.Split(
+                    ^adaptiveDef,
+                    ^＂:＂,
+                    ^true
+                  ^)［1］
+    adaptiveDef = string.Split(
+                    ^adaptiveDef,
+                    ^＂adaptive_defense_＂,
+                    ^true
+                  ^)［0］
   :
-    adaptiveDef = ""
+    adaptiveDef = ＂＂
 
   ?adaptiveDef = Poison
     equipL wand Vigor *10 +21
@@ -239,7 +250,9 @@ func levelHalls(mainLO,healLO)
     equipR shield ah
   /*
   如果是召唤boss,用3秒的冰驽
-  如果还在打large_ghost,等7s,如果还是large_ghost,再来3s
+
+  如果还在打large_ghost,等7s,
+  如果还是large_ghost,再来3s
   */
   ?foe = ghost_tomb &
   ^foe = boss &
@@ -261,7 +274,10 @@ func levelHalls(mainLO,healLO)
         ?foe = large_ghost
           ghostBossFlag = true
   ?debug = true
-    >`1,8,@getColor(ghostBossFlag)@,timer:@timer@,timer2:@timer2@
+    >`1,8,
+    ^@getColor(ghostBossFlag)@,
+    ^timer:@timer@,
+    ^timer2:@timer2@
 
   ?loc = undead_crypt_boss_harder
     equipL wand Vigor
@@ -331,11 +347,18 @@ func steal()
  *  blade_used_monsters
 **/
 func OnRstBtnPressed()
-  var monsArr = string.Split(storage.Get(＂blade_used_monsters＂))
+  var monsArr = string.Split(
+                  ^storage.Get(
+                    ^＂blade_used_monsters＂
+                  ^)
+                ^)
   monsArr.RemoveAt(monsArr.IndexOf(＂青铜守卫＂))
   monsArr.RemoveAt(monsArr.IndexOf(＂火元素＂))
 
-  storage.Set(＂blade_used_monsters＂, string.Join(＂ ＂, monsArr))
+  storage.Set(
+    ^＂blade_used_monsters＂,
+    ^string.Join(＂ ＂, monsArr)
+  ^)
   //storage.Delete(＂blade_used_monsters＂)
 
 /** 添加重置按钮 **/
@@ -376,7 +399,11 @@ func bladeMission35kill()
 
   ?foe & foe.distance <= 20
     ?storage.Has(＂blade_used_monsters＂)
-      monsArr = string.Split(storage.Get(＂blade_used_monsters＂),true)
+      monsArr =
+      ^string.Split(
+        ^storage.Get(＂blade_used_monsters＂),
+        ^true
+      ^)
       ? ! monsArr.Contains(foeName)
         ?useBlade() = true
           monsArr.Add(foeName)
@@ -384,13 +411,23 @@ func bladeMission35kill()
       ?useBlade() = true
         monsArr.Add(foeName)
     ?monsArr ! ［］
-      storage.Set(＂blade_used_monsters＂,string.Join(＂ ＂, monsArr))
+      storage.Set(
+        ^＂blade_used_monsters＂,
+        ^string.Join(＂ ＂, monsArr)
+      ^)
 
   breakString(10,foe.name,@nowMon)
-  breakString(11,storage.Get(＂blade_used_monsters＂),＂monsNum＂ + string.Split(storage.Get(＂blade_used_monsters＂)).Count() + ＂/35＂)
+  breakString(
+    ^11,
+    ^storage.Get(＂blade_used_monsters＂),
+    ^＂monsNum＂ + string.Split(
+      ^storage.Get(＂blade_used_monsters＂)
+    ^)
+    ^.Count() + ＂/35＂
+  ^)
 /** 完成400000重击伤害任务 **/
 func bladeMission400kDMG()
-  ? ! foe | 
+  ? ! foe |
   ^pickup.distance >= 20 |
   ^harvest.distance >= 20 |
   ^(foe=boss & loc=deadwood & foe=phase2) |
@@ -401,26 +438,41 @@ func bladeMission400kDMG()
   ^ foe.state = 115 & foe.time >= 60) |
   ^ ghostBossFlag = true |
   ^ needHealToMaxHp = true |
-  ^ string.IndexOf(foe.buffs.string, ＂buff_protection＂) ! -1
+  ^ string.IndexOf(
+    ^foe.buffs.string,
+    ^＂buff_protection＂
+  ^) ! -1
     return false
 
   var debuffStr = foe.debuffs.string
-  ?string.IndexOf(debuffStr,＂debuff_damage:1＂) = -1&
+  ?string.IndexOf(
+    ^debuffStr,
+    ^＂debuff_damage:1＂
+  ^) = -1&
     ^ foe ! immune_to_debuff_damage &
     ^ foe ! immune_to_ranged
     equipL wand poison
     equipR shield ah
-  :?string.IndexOf(debuffStr,＂debuff_chill:6＂) = -1&
+  :?string.IndexOf(
+    ^debuffStr,
+    ^＂debuff_chill:6＂
+  ^) = -1&
     ^ foe ! immune_to_debuff_chill &
     ^ foe ! immune_to_ranged
     equipL wand ice
     equipR shield ah
-  :?string.IndexOf(debuffStr,＂debuff_dot:1＂) = -1&
+  :?string.IndexOf(
+    ^debuffStr,
+    ^＂debuff_dot:1＂
+  ^) = -1&
     ^ foe ! immune_to_debuff_dot &
     ^ foe ! immune_to_ranged
     equipL wand fire
     equipR shield ah
-  :?string.IndexOf(debuffStr,＂stun:1＂) = -1 &
+  :?string.IndexOf(
+    ^debuffStr,
+    ^＂stun:1＂
+  ^) = -1 &
     ^ foe ! immune_to_stun &
     ^ foe ! immune_to_physical &
     ^ loc ! mine & foe ! explode
@@ -480,10 +532,14 @@ func showInfo()
   ?debug = true
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
-    breakString(13,foe.buffs.string,"buffs")
+    breakString(13,foe.buffs.string,＂buffs＂)
 
-  >c-25,11,@getColor(hp <= maxhp * LOW_HP_PERSENT)@,@maxhp * LOW_HP_PERSENT@
-  >c-42,11,@getColor(needHealToMaxHp)@,NeedHealToMaxHp
+  >c-25,11,
+    ^@getColor(hp <= maxhp * LOW_HP_PERSENT)@,
+    ^@maxhp * LOW_HP_PERSENT@
+  >c-42,11,
+    ^@getColor(needHealToMaxHp)@,
+    ^NeedHealToMaxHp
 
 
   myUtils.ShowTimer(10, 1)
