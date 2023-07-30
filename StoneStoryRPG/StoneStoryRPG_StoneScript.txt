@@ -330,15 +330,15 @@ func levelTemple(mainLO,healLO,magicLO)
 **/
 func steal()
   ?(foe=boss & loc=deadwood & foe=phase2) |
-  ^loc = undead_crypt_boss_harder |
-  ^pickup.distance >= 20 |
-  ^harvest.distance >= 20
+  ^loc = undead_crypt_boss_harder
     return false
 
   ?item.GetCooldown(＂skeleton_arm＂) <= 0 &
   ^(foe.hp + foe.armor) < 20 &
   ^foe ! immune_to_physical &
-  ^foe ! boss
+  ^foe ! boss &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20
     equip skeleton arm
     ?item.CanActivate(＂skeleton_arm＂)
        activate R
@@ -371,14 +371,14 @@ func addRstBtn()
 /** 使用堕神大剑的主动能力 **/
 func useBlade()
   ?(foe=boss & loc=deadwood & foe=phase2) |
-  ^loc = undead_crypt_boss_harder |
-  ^pickup.distance >= 20 |
-  ^harvest.distance >= 20
+  ^loc = undead_crypt_boss_harder
     return false
 
   ?item.GetCooldown(＂blade＂) <= 0 &
   ^foe.count > 5 &
-  ^foe.distance <= 20
+  ^foe.distance <= 20 &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20
     equip blade
     ?item.CanActivate(＂blade＂)
       activate R
@@ -427,9 +427,9 @@ func bladeMission35kill()
   ^)
 /** 完成400000重击伤害任务 **/
 func bladeMission400kDMG()
-  ? ! foe |
-  ^pickup.distance >= 20 |
-  ^harvest.distance >= 20 |
+  ? (!(foe &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20)) |
   ^(foe=boss & loc=deadwood & foe=phase2) |
   ^ hp <= maxhp * LOW_HP_PERSENT |
   ^ foe = immune_to_ranged |
@@ -483,14 +483,14 @@ func bladeMission400kDMG()
     showDebuffDetail()
 /** 使用面具的主动能力 **/
 func useMask()
-  ?(foe = boss & loc = temple) |
-  ^pickup.distance >= 20 |
-  ^harvest.distance >= 20
+  ?(foe = boss & loc = temple)
     return false
 
   ?item.GetCooldown(＂mask＂) <= 0 &
   ^foe.count > 0 &
-  ^foe.distance <= 20
+  ^foe.distance <= 20 &
+  ^pickup.distance >= 20 &
+  ^harvest.distance >= 20
     equip mask
     ?item.CanActivate(＂mask＂)
       activate R
