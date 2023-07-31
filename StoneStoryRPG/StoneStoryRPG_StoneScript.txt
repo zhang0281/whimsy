@@ -71,8 +71,13 @@ asciiend
   var averagedmg = 0
   var times = 0
   var totaldmg = 0
+  
+  var aacTimer = 0
+  var DEFAULT_FRAME = 15
+  var aacFoeHP = 0
+  var changeLR = false
 
-debug = false
+debug = true
 
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
@@ -139,32 +144,6 @@ func getItemIsCanUse(posX, posY, itemStr, desp)
     >`@posX@,@posY@,
       ^@getColor(false)@,
       ^@desp@ @item.GetCooldown(itemStr) / 30@s
-/** 在屏幕上显示foe的debuff详情 **/
-func showDebuffDetail()
-  ? ! foe.debuffs.string
-    return false
-  var debuffsArr =
-  ^string.Split(
-    ^foe.debuffs.string,
-    ^＂,＂,
-    ^true
-  ^)
-  for i = 0 .. debuffsArr.Count()-1
-    var debuffArr =
-    ^string.Split(
-      ^debuffsArr［i］,
-      ^＂:＂,
-      ^true
-    ^)
-    var e = debuffArr［0］
-    var eName = debuffArr［1］
-    var eLevel = debuffArr［2］
-    var eTime = debuffArr［3］
-    breakString(10+i,eLevel + ＂ ＂ + eTime,eName)
-    >`@i*23+1@,1,#ffc57f,＂element＂:@e@
-    >`@i*23+1@,2,#ffc57f,＂eName＂:@eName@
-    >`@i*23+1@,3,#ffc57f,＂eLevel＂:@eLevel@
-    >`@i*23+1@,4,#ffc57f,＂eTime＂:@eTime@
 /** 显示CD相关信息 **/
 func showCDWindow()
   >`19,1,#white,@cdWindow@
@@ -241,36 +220,34 @@ func showInfo()
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
 func AAC(iL,iR)
-  ?foe.distance > 5
-    return false
   ?changeLR = false
     equipL @iL@
     equipR @iR@
   :
     equipL @iR@
     equipR @iL@
-  ?timer <= DEFAULT_FRAME
-    timer++
+  ?aacTimer <= DEFAULT_FRAME
+    aacTimer++
   :
-    timer = 0
+    aacTimer = 0
 
-  ?timer = 0
+  ?aacTimer = 0
     changeLR = !changeLR
-    foeHP = foe.hp + foe.armor
+    aacFoeHP = foe.hp + foe.armor
   
-  ?timer = DEFAULT_FRAME &
-  ^foeHP > 0
-    ?(foe.hp + foe.armor) < foeHP
+  ?aacTimer = DEFAULT_FRAME &
+  ^aacFoeHP > 0
+    ?(foe.hp + foe.armor) < aacFoeHP
       DEFAULT_FRAME--
     :
       DEFAULT_FRAME++
       ?DEFAULT_FRAME > 35
-        DEFAULT_FRAME = 35
+        DEFAULT_FRAME = 15
   ?debug = true
-    >`0,5,TIMER@timer@ DEFAULT_FRAME@DEFAULT_FRAME@ changeLR@changeLR@
-    >`0,6,@(foe.hp + foe.armor)@ foeHP@foeHP@ @(foe.hp + foe.armor) < foeHP@
-    >`0,7,L:@item.left@
-    >`0,8,R:@item.right@
+    >`0,19,aacTimer@aacTimer@ DEFAULT_FRAME@DEFAULT_FRAME@ changeLR@changeLR@
+    >`0,20,@(foe.hp + foe.armor)@ aacFoeHP@aacFoeHP@ @(foe.hp + foe.armor) < aacFoeHP@
+    >`0,21,L:@item.left@
+    >`0,22,R:@item.right@
 
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
@@ -377,7 +354,7 @@ func bladeMission35kill()
     ^.Count() + ＂/35＂
   ^)
 /** 完成400000重击伤害任务 **/
-func bladeMission400kDMG()
+func debuffAtk()
   ? (!(foe &
   ^pickup.distance >= 20 &
   ^harvest.distance >= 20)) |
@@ -402,6 +379,7 @@ func bladeMission400kDMG()
   ^) = -1&
     ^ foe ! immune_to_debuff_damage &
     ^ foe ! immune_to_ranged
+    >`0,2,debuff poison
     equipL wand poison
     equipR shield ah
   :?string.IndexOf(
@@ -410,6 +388,7 @@ func bladeMission400kDMG()
   ^) = -1&
     ^ foe ! immune_to_debuff_chill &
     ^ foe ! immune_to_ranged
+    >`0,2,debuff ice
     equipL wand ice
     equipR shield ah
   :?string.IndexOf(
@@ -418,6 +397,7 @@ func bladeMission400kDMG()
   ^) = -1&
     ^ foe ! immune_to_debuff_dot &
     ^ foe ! immune_to_ranged
+    >`0,2,debuff fire
     equipL wand fire
     equipR shield ah
   :?string.IndexOf(
@@ -427,11 +407,9 @@ func bladeMission400kDMG()
     ^ foe ! immune_to_stun &
     ^ foe ! immune_to_physical &
     ^ loc ! mine & foe ! explode
+    >`0,2,debuff stun
     equipL hammer *10 +21
     equipR shield ah
-
-  ?debug = true
-    showDebuffDetail()
 /** 使用面具的主动能力 **/
 func useMask()
   ?(foe = boss & loc = temple)
@@ -471,244 +449,240 @@ func runFast()
     equipL triskelion stone
     equipR shield ah
 
-/** 关卡相关策略 **/
-func levels()
-  /** 岩石高地
-  *  自动铲石头
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  **/
-  func levelRocky(mainLO,healLO)
-    ?loc ! rocky
-      return false
-    loadout @mainLO@
-    // 自动铲石头
-    ?harvest = Boulder &
-    ^harvest.distance < 30
-      equip shovel
-    ?foe = boss &
-    ^getWeakness() ! false &
-    ^string.IndexOf(
-      ^foe.buffs.string,
-      ^＂buff_protection＂
-    ^) = -1
-      AAC(
-        ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-        ^＂sword ＂+getWeakness()+＂ D *10 +20＂
-      ^)
-      // ?item.GetCooldown(＂shield dash *10＂) <= 0
-      //   equipR shield dash *10
-      //   ?item.CanActivate(＂shield dash *10＂)
-      //     activate R
-    ?foe.buffs.string
-      adaptiveDef = foe.buffs.string
-      adaptiveDef = string.Split(
-                      ^adaptiveDef,
-                      ^＂:＂,
-                      ^true
-                    ^)［1］
-      adaptiveDef = string.Split(
-                      ^adaptiveDef,
-                      ^＂adaptive_defense_＂,
-                      ^true
-                    ^)［0］
-    :
-      adaptiveDef = ＂＂
-
-    ?foe = phase2
-      ?adaptiveDef = Poison
-        equipL wand Vigor *10 +21
-        equipR shield ah
-      :?adaptiveDef = Vigor
-        equipL wand AEther *10 +21
-        equipR shield ah
-      :?adaptiveDef = AEther
-        equipL wand Fire *10 +21
-        equipR shield ah
-      :?adaptiveDef = Fire
-        equipL wand Ice *10 +21
-        equipR shield ah
-      :?adaptiveDef = Ice
-        equipL wand Poison *10 +21
-        equipR shield ah
-    ?foe = phase3
-      equip Crossbow Ice *10 +21
-      ?adaptiveDef = Ice
-        equip Crossbow AEther *10 +21
-      :?adaptiveDef = AEther
-        equip Crossbow Ice *10 +21
-    ?hp <= maxhp * LOW_HP_PERSENT
-      loadout @healLO@
-    ?foe.state = 115 & foe.time >= 60
-      equipL mind stone
-  /** 枯木峡谷
-  *  自动砍树
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  *  phyLO: 物理伤害Loadout
-  **/
-  func levelDeadwood(mainLO,healLO,phyLO)
-    ?loc ! deadwood
-      return false
+/** 岩石高地
+*  自动铲石头
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+**/
+func levelRocky(mainLO,healLO)
+  ?loc ! rocky
+    return false
+  AAC(
+    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
+    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+  ^)
+  // // 自动铲石头
+  // ?harvest = Boulder &
+  // ^harvest.distance < 30
+  //   equip shovel
+  ?foe = boss &
+  ^getWeakness() ! false &
+  ^string.IndexOf(
+    ^foe.buffs.string,
+    ^＂buff_protection＂
+  ^) = -1
     AAC(
       ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
       ^＂sword ＂+getWeakness()+＂ D *10 +20＂
     ^)
-    loopHealHP(healLO)
-    // 魔免怪加载近战
-    ?foe = immune_to_ranged
-      loadout @phyLO@
-      ?ai.idle
-        equipL wand ice *10 +21
-        equip skeleton arm
-    // 自动砍树
-    ?harvest = Tree
-      equip hatchet
-    ?foe = wasp
-      equipL wand ice
-      equipR shield ah
-    ?foe = boss & foe = phase2
-      equipL war hammer *10 +21
-      equipR sword Vigor *10 +21
-  /** 恐怖洞窟
-  *  在打完boss之后补满血
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  **/
-  func levelCaves(mainLO,healLO)
-    ?loc ! caves
-      return false
-    loadout @mainLO@
-    loopHealHP(healLO)
-    ?foe = tiny_spider
-      equipWeaknessWand()
-  /** 蘑菇森林
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  **/
-  func levelForest(mainLO,healLO)
-    ?loc ! forest
-      return false
-    loadout @mainLO@
-    loopHealHP(healLO)
-    ?foe = ant
-      equipWeaknessWand()
-  /** 亡者之殿
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  *  magicLO: 魔法伤害Loadout
-  *  ? *>15 : use crossbow 3sec.
-  **/
-  func levelHalls(mainLO,healLO)
-    ?loc ! halls
-      return false
-    loadout @mainLO@
-    loopHealHP(healLO)
-    ?foe = immune_to_physical
-      equipL wand Vigor
-      equipR shield ah
-    /*
-    如果是召唤boss,用3秒的冰驽
+  ?foe.buffs.string
+    adaptiveDef = foe.buffs.string
+    adaptiveDef = string.Split(
+                    ^adaptiveDef,
+                    ^＂:＂,
+                    ^true
+                  ^)［1］
+    adaptiveDef = string.Split(
+                    ^adaptiveDef,
+                    ^＂adaptive_defense_＂,
+                    ^true
+                  ^)［0］
+  :
+    adaptiveDef = ＂＂
 
-    如果还在打large_ghost,等7s,
-    如果还是large_ghost,再来3s
-    */
-    ?foe = ghost_tomb &
-    ^foe = boss &
-    ^foe = spawner
-      timer = 3*30
-      ghostBossFlag = true
-
-    ?timer > 0 & ghostBossFlag = true
-      equip crossbow ice D *10 +21
-      timer--
-    :
-      timer = 3*30
-      ghostBossFlag = false
-      ?foe = large_ghost
-        ?timer2 > 0 & ghostBossFlag = false
-          timer2--
-        :
-          timer2 = 7*30
-          ?foe = large_ghost
-            ghostBossFlag = true
-    ?debug = true
-      >`1,8,
-      ^@getColor(ghostBossFlag)@,
-      ^timer:@timer@,
-      ^timer2:@timer2@
-
-    ?loc = undead_crypt_boss_harder
-      equipL wand Vigor
-      equipR sword Vigor *10 +21
-
-  /** 灼热矿井
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  **/
-  func levelMine(mainLO,healLO)
-    ?loc ! mine
-      return false
+  ?adaptiveDef = Poison
+    AAC(
+      ^＂sword Vigor D *10 +21＂,
+      ^＂sword Vigor D *10 +20＂
+    ^)
+  :?adaptiveDef = Vigor
+    AAC(
+      ^＂sword AEther D *10 +21＂,
+      ^＂sword AEther D *10 +20＂
+    ^)
+  :?adaptiveDef = AEther
+    AAC(
+      ^＂sword Fire D *10 +21＂,
+      ^＂sword Fire D *10 +20＂
+    ^)
+  :?adaptiveDef = Fire
+    AAC(
+      ^＂sword Ice D *10 +21＂,
+      ^＂sword Ice D *10 +20＂
+    ^)
+  :?adaptiveDef = Ice
+    AAC(
+      ^＂sword Poison D *10 +21＂,
+      ^＂sword Poison D *10 +20＂
+    ^)
+  ?hp <= maxhp * LOW_HP_PERSENT
+    loadout @healLO@
+  ?foe.state = 115 & foe.time >= 60
+    equipL mind stone
+/** 枯木峡谷
+*  自动砍树
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+*  phyLO: 物理伤害Loadout
+**/
+func levelDeadwood(mainLO,healLO,phyLO)
+  ?loc ! deadwood
+    return false
+  AAC(
+    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
+    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+  ^)
+  loopHealHP(healLO)
+  // 魔免怪加载近战
+  ?foe = immune_to_ranged
+    loadout @phyLO@
+    ?ai.idle
+      equipL wand ice *10 +21
+      equip skeleton arm
+  // 自动砍树
+  ?harvest = Tree
+    equip hatchet
+  ?foe = wasp
+    equipL wand ice
+    equipR shield ah
+  ?foe = boss & foe = phase2
+    equipL war hammer *10 +21
+    equipR sword Vigor *10 +21
+/** 恐怖洞窟
+*  在打完boss之后补满血
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+**/
+func levelCaves(mainLO,healLO)
+  ?loc ! caves
+    return false
+  loadout @mainLO@
+  loopHealHP(healLO)
+  ?foe = tiny_spider
     equipWeaknessWand()
-    ?foe = boss
-      AAC(
-        ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-        ^＂sword ＂+getWeakness()+＂ D *10 +20＂
-      ^)
-    loopHealHP(healLO)
-    ?(foe = fluff | foe = explode) &
-    ^foe.distance <= 5
-      equipL mind stone
-  /** 不融山
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  **/
-  func levelIcy(mainLO,healLO)
-    ?loc ! icy
-      return false
+/** 蘑菇森林
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+**/
+func levelForest(mainLO,healLO)
+  ?loc ! forest
+    return false
+  loadout @mainLO@
+  loopHealHP(healLO)
+  ?foe = ant
+    equipWeaknessWand()
+/** 亡者之殿
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+*  magicLO: 魔法伤害Loadout
+*  ? *>15 : use crossbow 3sec.
+**/
+func levelHalls(mainLO,healLO)
+  ?loc ! halls
+    return false
+  loadout @mainLO@
+  loopHealHP(healLO)
+  ?foe = immune_to_physical
+    equipL wand Vigor
+    equipR shield ah
+  /*
+  如果是召唤boss,用3秒的冰驽
+
+  如果还在打large_ghost,等7s,
+  如果还是large_ghost,再来3s
+  */
+  ?foe = ghost_tomb &
+  ^foe = boss &
+  ^foe = spawner
+    timer = 3*30
+    ghostBossFlag = true
+
+  ?timer > 0 & ghostBossFlag = true
+    equip crossbow ice D *10 +21
+    timer--
+  :
+    timer = 3*30
+    ghostBossFlag = false
+    ?foe = large_ghost
+      ?timer2 > 0 & ghostBossFlag = false
+        timer2--
+      :
+        timer2 = 7*30
+        ?foe = large_ghost
+          ghostBossFlag = true
+  ?debug = true
+    >`1,8,
+    ^@getColor(ghostBossFlag)@,
+    ^timer:@timer@,
+    ^timer2:@timer2@
+
+  ?loc = undead_crypt_boss_harder
+    equipL wand Vigor
+    equipR sword Vigor *10 +21
+
+/** 灼热矿井
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+**/
+func levelMine(mainLO,healLO)
+  ?loc ! mine
+    return false
+  equipWeaknessWand()
+  ?foe = boss
     AAC(
       ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
       ^＂sword ＂+getWeakness()+＂ D *10 +20＂
     ^)
-    loopHealHP(healLO)
-  /** 神庙
-  *  mainLO: 主Loadout
-  *  healLO: 治疗Loadout
-  *  magicLO: 魔法伤害Loadout
-  **/
-  func levelTemple(mainLO,healLO,magicLO)
-    ?loc ! temple
-      return false
-    AAC(
-      ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-      ^＂sword ＂+getWeakness()+＂ D *10 +20＂
-    ^)
-    loopHealHP(healLO)
-    // 魔免怪加载近战
-    ?foe = immune_to_Vigor
-      loadout @magicLO@
-    ?foe = flying_serpent
-      equipWeaknessWand()
-  /** 显示宝箱位置 **/
-  func freeChest()
-    ?loc = undead_crypt_intro
-      freeChestTracker.Main()
+  loopHealHP(healLO)
+  ?(foe = fluff | foe = explode) &
+  ^foe.distance <= 5
+    equipL mind stone
+/** 不融山
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+**/
+func levelIcy(mainLO,healLO)
+  ?loc ! icy
+    return false
+  AAC(
+    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
+    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+  ^)
+  loopHealHP(healLO)
+/** 神庙
+*  mainLO: 主Loadout
+*  healLO: 治疗Loadout
+*  magicLO: 魔法伤害Loadout
+**/
+func levelTemple(mainLO,healLO,magicLO)
+  ?loc ! temple
+    return false
+  AAC(
+    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
+    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+  ^)
+  loopHealHP(healLO)
+  // 魔免怪加载近战
+  ?foe = immune_to_Vigor
+    loadout @magicLO@
+  ?foe = flying_serpent
+    equipWeaknessWand()
+/** 显示宝箱位置 **/
+func freeChest()
+  ?loc = undead_crypt_intro
+    freeChestTracker.Main()
 
-  /** 执行对应关卡的策略 **/
-  levelRocky(MAIN_LO,HEAL_LO)
-  levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
-  levelCaves(MAIN_LO,HEAL_LO)
-  levelForest(MAIN_LO,HEAL_LO)
-  levelHalls(MAIN_LO,HEAL_LO)
-  levelMine(MAIN_LO,HEAL_LO)
-  levelIcy(MAIN_LO,HEAL_LO)
-  levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
-  // 宝箱小游戏提示
-  freeChest()
-
-
-
-levels()
+/** 执行对应关卡的策略 **/
+levelRocky(MAIN_LO,HEAL_LO)
+levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
+levelCaves(MAIN_LO,HEAL_LO)
+levelForest(MAIN_LO,HEAL_LO)
+levelHalls(MAIN_LO,HEAL_LO)
+levelMine(MAIN_LO,HEAL_LO)
+levelIcy(MAIN_LO,HEAL_LO)
+levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
+// 宝箱小游戏提示
+freeChest()
 
 /** 其他功能 **/
 // 自动拾取
@@ -716,7 +690,7 @@ autoPickup()
 
 //bladeMission35kill()
 //addRstBtn()
-bladeMission400kDMG()
+debuffAtk()
 
 // 偷取道具
 steal()
