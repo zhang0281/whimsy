@@ -146,14 +146,14 @@ func getItemIsCanUse(posX, posY, itemStr)
       ^@getColor(false)@,
       ^@item.GetCooldown(itemStr) / 30@s
 /** 显示CD相关信息 **/
-func showCDWindow()
-  >`19,1,#white,@cdWindow@
-  getItemIsCanUse(24,2,＂bash＂)
-  getItemIsCanUse(24,3,＂shield dash *10＂)
-  getItemIsCanUse(24,4,＂mind stone＂)
-  getItemIsCanUse(24,5,＂skeleton_arm＂)
-  getItemIsCanUse(24,6,＂blade＂)
-  getItemIsCanUse(24,7,＂mask＂)
+func showCDWindow(posX, posY)
+  >`@posX@,@posY@,#white,@cdWindow@
+  getItemIsCanUse(posX+5, posY+1, ＂bash＂)
+  getItemIsCanUse(posX+5, posY+2, ＂shield dash *10＂)
+  getItemIsCanUse(posX+5, posY+3, ＂mind stone＂)
+  getItemIsCanUse(posX+5, posY+4, ＂skeleton_arm＂)
+  getItemIsCanUse(posX+5, posY+5, ＂blade＂)
+  getItemIsCanUse(posX+5, posY+6, ＂mask＂)
 /** 格式化数字输出 **/
 func formatNumOutput(num)
   var result = num
@@ -174,7 +174,7 @@ func formatNumOutput(num)
     spaceStr = spaceStr + ＂#＂
   return spaceStr+result
 /** 显示DPS **/
-func dpsChecker()
+func dpsChecker(posX, posY)
   ?dpsTimer <= updatespeed
     dpsTimer++
   :
@@ -194,12 +194,11 @@ func dpsChecker()
     dps=0
   ?times > 0
     averagedmg = totaldmg / times
-
->`28,2,#white,@dmgWindow@
->`36,3,#ffffff,@formatNumOutput(dps)@
->`36,4,#ffffff,@formatNumOutput(times)@
->`36,5,#ffffff,@formatNumOutput(totaldmg)@
->`36,6,#ffffff,@formatNumOutput(averagedmg)@
+  >`@posX@,@posY@,#white,@dmgWindow@
+  >`@posX+8@,@posY+1@,#ffffff,@formatNumOutput(dps)@
+  >`@posX+8@,@posY+2@,#ffffff,@formatNumOutput(times)@
+  >`@posX+8@,@posY+3@,#ffffff,@formatNumOutput(totaldmg)@
+  >`@posX+8@,@posY+4@,#ffffff,@formatNumOutput(averagedmg)@
 
 /** 显示自定义变量的值 **/
 func showInfo()
@@ -215,8 +214,6 @@ func showInfo()
     breakString(11,foe,foe.name)
     breakString(13,foe.buffs.string,＂buffs＂)
   
-  showCDWindow()
-  dpsChecker()
 
   >c-25,11,
     ^@getColor(hp <= maxhp * LOW_HP_PERSENT)@,
@@ -225,9 +222,11 @@ func showInfo()
     ^@getColor(needHealToMaxHp)@,
     ^NeedHealToMaxHp
 
-  myUtils.ShowTimer(10, 1)
-  myUtils.ShowTimeStats(72, 1)
-  myUtils.ShowFoesBar(30, 1, 25, true)
+  showCDWindow(9,1)
+  myUtils.ShowTimeStats(18, 2)
+  myUtils.ShowTimer(32, 2)
+  dpsChecker(40,2)
+  myUtils.ShowFoesBar(18, 1, 25, true)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
 func AAC(iL,iR)
