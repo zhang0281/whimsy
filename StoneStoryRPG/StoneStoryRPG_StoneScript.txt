@@ -206,7 +206,9 @@ func showInfo()
     ^ loc = uulaa_shop |
     ^ loc = waterfall |
     ^ loc = deadwood_river |
-    ^ loc = cross_bridge
+    ^ loc = cross_bridge |
+    ^ loc = wildride_undead_crypt_gate |
+    ^ loc = wildride_undead_crypt_halls
     return false
 
   ?debug = true
@@ -226,7 +228,7 @@ func showInfo()
   myUtils.ShowTimeStats(19, 2)
   myUtils.ShowTimer(33, 2)
   dpsChecker(41,2)
-  myUtils.ShowFoesBar(19, 1, 30, true)
+  myUtils.ShowFoesBar(19, 1, 30, false)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
 func AAC(iL,iR)
@@ -658,7 +660,15 @@ func levelTemple(mainLO,healLO,magicLO)
 func freeChest()
   ?loc = undead_crypt_intro
     freeChestTracker.Main()
-
+/** 帕拉斯大庆典 **/
+func wildRide()
+  ?loc = ＂wildride_undead_crypt_gate＂
+    >o0,-2,hint: 一朝战败,万念俱灰
+  ?loc = ＂wildride_undead_crypt_halls＂
+    ?pos.x = 120
+      >o0,-3,hint: 悄悄话,200多个
+    :?pos.x = 255
+      >o0,-2,hint: 打断 ,布洛希
 /** 执行对应关卡的策略 **/
 levelRocky(MAIN_LO,HEAL_LO)
 levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
@@ -670,7 +680,7 @@ levelIcy(MAIN_LO,HEAL_LO)
 levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
 // 宝箱小游戏提示
 freeChest()
-
+wildRide()
 /** 其他功能 **/
 // 自动拾取
 autoPickup()
