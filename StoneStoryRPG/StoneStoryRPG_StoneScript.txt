@@ -42,20 +42,21 @@ import UI/BetterInfo2
   var timer2 = 7*30
   var cdWindow = ascii
 ╔ CD显示  ╗
-║       ║
-║       ║
-║       ║
-║       ║
-║       ║
+║冲撞盾    ║
+║冲刺盾    ║
+║思维石    ║
+║骷髅手    ║
+║堕神剑    ║
+║面 具    ║
 ╚═══════╝
 asciiend
   var dmgWindow = ascii
-╔  DMG显示   ╗
-║          ║
-║          ║
-║          ║
-║          ║
-╚══════════╝
+╔   DMG显示   ╗
+║CurDPS:    ║
+║DPSTms:    ║
+║TtDMG :    ║
+║AvgDPS:    ║
+╚═══════════╝
 asciiend
 
 ?loc.begin | loc.loop
@@ -77,7 +78,7 @@ asciiend
   var aacFoeHP = 0
   var changeLR = false
 
-debug = true
+debug = false
 
 /** 在屏幕指定位置输出消息
  *  posY:屏幕Y轴坐标
@@ -135,33 +136,46 @@ func loopHealHP(healLO)
     ?hp = maxhp
       needHealToMaxHp = false
 /** 显示指定道具的冷却时间 **/
-func getItemIsCanUse(posX, posY, itemStr, desp)
+func getItemIsCanUse(posX, posY, itemStr)
   ?item.GetCooldown(itemStr) <=0
     >`@posX@,@posY@,
       ^@getColor(true)@,
-      ^@desp@ RDY
+      ^RDY
   :
     >`@posX@,@posY@,
       ^@getColor(false)@,
-      ^@desp@ @item.GetCooldown(itemStr) / 30@s
+      ^@item.GetCooldown(itemStr) / 30@s
 /** 显示CD相关信息 **/
 func showCDWindow()
   >`19,1,#white,@cdWindow@
-  getItemIsCanUse(20,2,＂shield dash *10＂, 冲刺盾)
-  getItemIsCanUse(20,3,＂mind stone＂, 思维石)
-  getItemIsCanUse(20,4,＂skeleton_arm＂, 骷髅手)
-  getItemIsCanUse(20,5,＂blade＂, 堕神剑)
-  getItemIsCanUse(20,6,＂mask＂, ＂面 具＂)
+  getItemIsCanUse(24,2,＂bash＂)
+  getItemIsCanUse(24,3,＂shield dash *10＂)
+  getItemIsCanUse(24,4,＂mind stone＂)
+  getItemIsCanUse(24,5,＂skeleton_arm＂)
+  getItemIsCanUse(24,6,＂blade＂)
+  getItemIsCanUse(24,7,＂mask＂)
 /** 格式化数字输出 **/
 func formatNumOutput(num)
-  ?num > 999
-    return num
-  :?num > 99
-    return ＂#＂+num
-  :?num > 9
-    return ＂##＂+num
-  :
-    return ＂###＂+num
+  var result = num
+  result = num
+  ?string.Size(num+＂＂) > 4
+    result = (num/1000)+k
+  result = num
+  ?string.Size(num+＂＂) > 4
+    result = (num/1000)+m
+  var spaceNum = 4-string.Size(result+＂＂)
+  var spaceStr = ＂＂
+  for i = 1..spaceNum
+    spaceStr = spaceStr + ＂#＂
+  return spaceStr+result
+  // ?num > 999
+  //   return num
+  // :?num > 99
+  //   return ＂#＂+num
+  // :?num > 9
+  //   return ＂##＂+num
+  // :
+  //   return ＂###＂+num
 /** 显示DPS **/
 func dpsChecker()
   ?dpsTimer <= updatespeed
@@ -185,10 +199,10 @@ func dpsChecker()
     averagedmg = totaldmg / times
 
 >`28,2,#white,@dmgWindow@
->`29,3,#ffffff,DMG/s:@formatNumOutput(dps)@
->`29,4,#ffffff,Times:@formatNumOutput(times)@
->`29,5,#ffffff,T DMG:@formatNumOutput(totaldmg)@
->`29,6,#ffffff,A DMG:@formatNumOutput(averagedmg)@
+>`36,3,#ffffff,@formatNumOutput(dps)@
+>`36,4,#ffffff,@formatNumOutput(times)@
+>`36,5,#ffffff,@formatNumOutput(totaldmg)@
+>`36,6,#ffffff,@formatNumOutput(averagedmg)@
 
 /** 显示自定义变量的值 **/
 func showInfo()
@@ -220,35 +234,35 @@ func showInfo()
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
 func AAC(iL,iR)
-  ?changeLR = false
+  equipL @iL@
+  equipR @iR@
+  ?ai.idle
+    equip skeleton
     equipL @iL@
     equipR @iR@
-  :
-    equipL @iR@
-    equipR @iL@
-  ?aacTimer <= DEFAULT_FRAME
-    aacTimer++
-  :
-    aacTimer = 0
+  // ?aacTimer <= DEFAULT_FRAME
+  //   aacTimer++
+  // :
+  //   aacTimer = 0
 
-  ?aacTimer = 0
-    changeLR = !changeLR
-    aacFoeHP = foe.hp + foe.armor
+  // ?aacTimer = 0
+  //   changeLR = !changeLR
+  //   aacFoeHP = foe.hp + foe.armor
   
-  ?aacTimer = DEFAULT_FRAME &
-  ^aacFoeHP > 0
-    ?(foe.hp + foe.armor) < aacFoeHP
-      DEFAULT_FRAME--
-    :
-      DEFAULT_FRAME++
-      ?DEFAULT_FRAME > 35
-        DEFAULT_FRAME = 15
-  ?debug = true
-    >`0,19,aacTimer@aacTimer@ DEFAULT_FRAME@DEFAULT_FRAME@ changeLR@changeLR@
-    >`0,20,@(foe.hp + foe.armor)@ aacFoeHP@aacFoeHP@ @(foe.hp + foe.armor) < aacFoeHP@
-    >`0,21,L:@item.left@
-    >`0,22,R:@item.right@
-
+  // ?aacTimer = DEFAULT_FRAME &
+  // ^aacFoeHP > 0
+  //   ?(foe.hp + foe.armor) < aacFoeHP
+  //     DEFAULT_FRAME--
+  //   :
+  //     DEFAULT_FRAME++
+  //     ?DEFAULT_FRAME > 35
+  //       DEFAULT_FRAME = 15
+        
+  // >`0,18,aacTimer@aacTimer@\nDEFAULT_FRAME@DEFAULT_FRAME@ changeLR@changeLR@
+  // ?debug = true
+  //   >`0,20,@(foe.hp + foe.armor)@ aacFoeHP@aacFoeHP@ @(foe.hp + foe.armor) < aacFoeHP@
+  //   >`0,21,L:@item.left@
+  //   >`0,22,R:@item.right@
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -516,7 +530,7 @@ func levelRocky(mainLO,healLO)
       ^＂sword Poison D *10 +20＂
     ^)
   ?hp <= maxhp * LOW_HP_PERSENT
-    loadout @healLO@
+    loadout 0
   ?foe.state = 115 & foe.time >= 60
     equipL mind stone
 /** 枯木峡谷
