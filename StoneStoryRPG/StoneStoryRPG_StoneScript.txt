@@ -366,7 +366,7 @@ func debuffAtk()
   ^) = -1&
     ^ foe ! immune_to_debuff_damage &
     ^ foe ! immune_to_ranged
-    >`0,2,debuff poison
+    >`0,6,dbf poison
     equipL wand poison
     equipR shield ah
   :?string.IndexOf(
@@ -375,7 +375,7 @@ func debuffAtk()
   ^) = -1&
     ^ foe ! immune_to_debuff_chill &
     ^ foe ! immune_to_ranged
-    >`0,2,debuff ice
+    >`0,6,dbf ice
     equipL wand ice
     equipR shield ah
   :?string.IndexOf(
@@ -384,7 +384,7 @@ func debuffAtk()
   ^) = -1&
     ^ foe ! immune_to_debuff_dot &
     ^ foe ! immune_to_ranged
-    >`0,2,debuff fire
+    >`0,6,dbf fire
     equipL wand fire
     equipR shield ah
   :?string.IndexOf(
@@ -394,7 +394,7 @@ func debuffAtk()
     ^ foe ! immune_to_stun &
     ^ foe ! immune_to_physical &
     ^ loc ! mine & foe ! explode
-    >`0,2,debuff stun
+    >`0,6,dbf stun
     equipL hammer *10 +21
     equipR shield ah
 /** 使用面具的主动能力 **/
