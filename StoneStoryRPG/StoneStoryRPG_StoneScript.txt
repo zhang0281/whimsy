@@ -168,14 +168,6 @@ func formatNumOutput(num)
   for i = 1..spaceNum
     spaceStr = spaceStr + ＂#＂
   return spaceStr+result
-  // ?num > 999
-  //   return num
-  // :?num > 99
-  //   return ＂#＂+num
-  // :?num > 9
-  //   return ＂##＂+num
-  // :
-  //   return ＂###＂+num
 /** 显示DPS **/
 func dpsChecker()
   ?dpsTimer <= updatespeed
@@ -240,29 +232,6 @@ func AAC(iL,iR)
     equip skeleton
     equipL @iL@
     equipR @iR@
-  // ?aacTimer <= DEFAULT_FRAME
-  //   aacTimer++
-  // :
-  //   aacTimer = 0
-
-  // ?aacTimer = 0
-  //   changeLR = !changeLR
-  //   aacFoeHP = foe.hp + foe.armor
-  
-  // ?aacTimer = DEFAULT_FRAME &
-  // ^aacFoeHP > 0
-  //   ?(foe.hp + foe.armor) < aacFoeHP
-  //     DEFAULT_FRAME--
-  //   :
-  //     DEFAULT_FRAME++
-  //     ?DEFAULT_FRAME > 35
-  //       DEFAULT_FRAME = 15
-        
-  // >`0,18,aacTimer@aacTimer@\nDEFAULT_FRAME@DEFAULT_FRAME@ changeLR@changeLR@
-  // ?debug = true
-  //   >`0,20,@(foe.hp + foe.armor)@ aacFoeHP@aacFoeHP@ @(foe.hp + foe.armor) < aacFoeHP@
-  //   >`0,21,L:@item.left@
-  //   >`0,22,R:@item.right@
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
