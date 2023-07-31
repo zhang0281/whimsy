@@ -41,14 +41,14 @@ import UI/BetterInfo2
   var timer = 3*30
   var timer2 = 7*30
   var cdWindow = ascii
-╔ CD显示  ╗
-║冲撞盾    ║
-║冲刺盾    ║
-║思维石    ║
-║骷髅手    ║
-║堕神剑    ║
-║面 具    ║
-╚═══════╝
+╔  CD显示  ╗
+║冲撞盾牌    ║
+║冲刺盾牌    ║
+║意念之石    ║
+║骷髅手     ║
+║堕神之剑    ║
+║娜迦面具    ║
+╚════════╝
 asciiend
   var dmgWindow = ascii
 ╔   DPS显示   ╗
@@ -148,12 +148,12 @@ func getItemIsCanUse(posX, posY, itemStr)
 /** 显示CD相关信息 **/
 func showCDWindow(posX, posY)
   >`@posX@,@posY@,#white,@cdWindow@
-  getItemIsCanUse(posX+5, posY+1, ＂bash＂)
-  getItemIsCanUse(posX+5, posY+2, ＂shield dash *10＂)
-  getItemIsCanUse(posX+5, posY+3, ＂mind stone＂)
-  getItemIsCanUse(posX+5, posY+4, ＂skeleton_arm＂)
-  getItemIsCanUse(posX+5, posY+5, ＂blade＂)
-  getItemIsCanUse(posX+5, posY+6, ＂mask＂)
+  getItemIsCanUse(posX+6, posY+1, ＂bash＂)
+  getItemIsCanUse(posX+6, posY+2, ＂shield dash *10＂)
+  getItemIsCanUse(posX+6, posY+3, ＂mind stone＂)
+  getItemIsCanUse(posX+6, posY+4, ＂skeleton_arm＂)
+  getItemIsCanUse(posX+6, posY+5, ＂blade＂)
+  getItemIsCanUse(posX+6, posY+6, ＂mask＂)
 /** 格式化数字输出 **/
 func formatNumOutput(num)
   var result = num
@@ -223,10 +223,10 @@ func showInfo()
     ^NeedHealToMaxHp
 
   showCDWindow(9,1)
-  myUtils.ShowTimeStats(18, 2)
-  myUtils.ShowTimer(32, 2)
-  dpsChecker(40,2)
-  myUtils.ShowFoesBar(18, 1, 25, true)
+  myUtils.ShowTimeStats(19, 2)
+  myUtils.ShowTimer(33, 2)
+  dpsChecker(41,2)
+  myUtils.ShowFoesBar(19, 1, 30, true)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
 func AAC(iL,iR)
