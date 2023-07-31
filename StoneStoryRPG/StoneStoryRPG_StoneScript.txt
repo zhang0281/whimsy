@@ -208,7 +208,8 @@ func showInfo()
     ^ loc = deadwood_river |
     ^ loc = cross_bridge |
     ^ loc = wildride_undead_crypt_gate |
-    ^ loc = wildride_undead_crypt_halls
+    ^ loc = wildride_undead_crypt_halls |
+    ^ loc.isQuest
     return false
 
   ?debug = true
