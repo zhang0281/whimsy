@@ -51,7 +51,7 @@ import UI/BetterInfo2
 ╚═══════╝
 asciiend
   var dmgWindow = ascii
-╔   DMG显示   ╗
+╔   DPS显示   ╗
 ║CurDPS:    ║
 ║DPSTms:    ║
 ║TtDMG :    ║
@@ -158,11 +158,16 @@ func showCDWindow()
 func formatNumOutput(num)
   var result = num
   result = num
-  ?string.Size(num+＂＂) > 4
-    result = (num/1000)+k
-  result = num
-  ?string.Size(num+＂＂) > 4
-    result = (num/1000)+m
+  ?string.Size(num+＂＂) > 16
+    result = (num/1000/1000/1000/1000)+T
+  :?string.Size(num+＂＂) > 12
+    result = (num/1000/1000/1000)+B
+  :?string.Size(num+＂＂) > 8
+    result = (num/1000/1000)+M
+  :?string.Size(num+＂＂) > 4
+    result = (num/1000)+K
+  ?string.Size(result+＂＂) = 4
+    return result
   var spaceNum = 4-string.Size(result+＂＂)
   var spaceStr = ＂＂
   for i = 1..spaceNum
