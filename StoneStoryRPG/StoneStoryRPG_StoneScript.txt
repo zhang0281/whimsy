@@ -47,7 +47,7 @@ import UI/BetterInfo2
 ║意念之石    ║
 ║骷髅手     ║
 ║堕神之剑    ║
-║娜迦面具    ║
+║娜伽面具    ║
 ╚════════╝
 asciiend
   var dmgWindow = ascii
