@@ -131,7 +131,8 @@ func loopHealHP(healLO)
     needHealToMaxHp = true
   ?needHealToMaxHp = true &
   ^hp <= maxhp &
-  ^foe ! boss
+  ^foe ! boss &
+  ^foe ! ice_wall
     loadout @healLO@
     ?hp = maxhp
       needHealToMaxHp = false
@@ -147,7 +148,7 @@ func getItemIsCanUse(posX, posY, itemStr)
       ^@item.GetCooldown(itemStr) / 30@s
 /** 显示CD相关信息 **/
 func showCDWindow(posX, posY)
-  >`@posX@,@posY@,#white,@cdWindow@
+  >`@posX@,@posY@,#347FC4,@cdWindow@
   getItemIsCanUse(posX+6, posY+1, ＂bash＂)
   getItemIsCanUse(posX+6, posY+2, ＂shield dash *10＂)
   getItemIsCanUse(posX+6, posY+3, ＂mind stone＂)
@@ -194,11 +195,11 @@ func dpsChecker(posX, posY)
     dps=0
   ?times > 0
     averagedmg = totaldmg / times
-  >`@posX@,@posY@,#white,@dmgWindow@
-  >`@posX+8@,@posY+1@,#ffffff,@formatNumOutput(dps)@
-  >`@posX+8@,@posY+2@,#ffffff,@formatNumOutput(times)@
-  >`@posX+8@,@posY+3@,#ffffff,@formatNumOutput(totaldmg)@
-  >`@posX+8@,@posY+4@,#ffffff,@formatNumOutput(averagedmg)@
+  >`@posX@,@posY@,#CADBC0,@dmgWindow@
+  >`@posX+8@,@posY+1@,#CADBC0,@formatNumOutput(dps)@
+  >`@posX+8@,@posY+2@,#CADBC0,@formatNumOutput(times)@
+  >`@posX+8@,@posY+3@,#CADBC0,@formatNumOutput(totaldmg)@
+  >`@posX+8@,@posY+4@,#CADBC0,@formatNumOutput(averagedmg)@
 
 /** 显示自定义变量的值 **/
 func showInfo()
@@ -216,7 +217,9 @@ func showInfo()
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
     breakString(13,foe.buffs.string,＂buffs＂)
-  
+    >c-42,9,
+    ^L:@item.left@\n
+    ^R:@item.right@\n
 
   >c-25,11,
     ^@getColor(hp <= maxhp * LOW_HP_PERSENT)@,
@@ -245,6 +248,14 @@ func AAC2H(item2H)
   ?ai.idle
     equip shield
     equip @item2H@
+/** 使用指定盾牌 **/
+func useShield(shield)
+  ?debug = true
+    >c-42,8,shield@item.GetCooldown(shield)@
+  ?item.GetCooldown(shield) <= 0
+    equipR @shield@
+    ?item.CanActivate(shield)
+      activate R
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -367,21 +378,21 @@ func debuffAtk()
     ^debuffStr,＂debuff_damage:1＂
   ^) = -1&
     ^ foe ! immune_to_debuff_damage
-    >`0,6,dbf poison
+    >`0,6,#C94277,dbf poison
     equipL wand poison
     equipR shield ah
   :?string.IndexOf(
     ^debuffStr,＂debuff_chill:6＂
   ^) = -1&
     ^ foe ! immune_to_debuff_chill
-    >`0,6,dbf ice
+    >`0,6,#C94277,dbf ice
     equipL wand ice
     equipR shield ah
   :?string.IndexOf(
     ^debuffStr,＂debuff_dot:1＂
   ^) = -1&
     ^ foe ! immune_to_debuff_dot
-    >`0,6,dbf fire
+    >`0,6,#C94277,dbf fire
     equipL wand fire
     equipR shield ah
   :?string.IndexOf(
@@ -390,7 +401,7 @@ func debuffAtk()
     ^ foe ! immune_to_stun &
     ^ foe ! immune_to_physical &
     ^ (loc ! mine & foe ! explode)
-    >`0,6,dbf stun
+    >`0,6,#C94277,dbf stun
     equipL hammer *10 +21
     equipR shield ah
 /** 使用面具的主动能力 **/
@@ -618,7 +629,6 @@ func levelMine(mainLO,healLO)
     return false
   equipWeaknessWand()
   debuffAtk()
-  >`0,10,state:@foe.state@ time:@foe.time@
   ?foe = boss
     ?foe = guardian
       AAC2H(＂Crossbow AEther D *10 +21＂)
@@ -635,10 +645,7 @@ func levelMine(mainLO,healLO)
           ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
           ^＂sword ＂+getWeakness()+＂ D *10 +20＂
         ^)
-      ?item.GetCooldown(＂bash＂) <= 0
-        equipR bash
-        ?item.CanActivate(＂bash＂)
-          activate R
+      useShield(bash)
     // 躲锤子
     ?foe.state = 32
       ?foe.time >= 32
@@ -659,11 +666,15 @@ func levelIcy(mainLO,healLO)
   ?loc ! icy
     return false
   AAC1H(
-    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+    ^＂big sword Fire dF *10 +21＂,
+    ^＂big sword Fire D *10 +21＂
   ^)
-  debuffAtk()
-  loopHealHP(healLO)
+  ?foe ! ice_wall
+    ?foe ! boss
+      useShield(bash)
+    debuffAtk()
+  ?foe ! ice_pillar
+    loopHealHP(healLO)
 /** 神庙
 *  mainLO: 主Loadout
 *  healLO: 治疗Loadout
