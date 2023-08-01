@@ -1,7 +1,5 @@
-// 意念之石启动之后,可以持续执行它所收到的指令.
-// 指令必须使用写入石之脚本.
-// 其他信息请见:StoneStoryRPG.com/stonescript.
-// ——贤者贝赛拉
+// https://StoneStoryRPG.com/stonescript
+// https://stonestoryrpg.com/stonescript/manual.html
 
 /*Poison (∞) in the Caves of Fear and the Temple
 Vigor  (♥) in the Mushroom Forest
@@ -72,7 +70,7 @@ asciiend
   var averagedmg = 0
   var times = 0
   var totaldmg = 0
-  
+
   var aacTimer = 0
   var DEFAULT_FRAME = 15
   var aacFoeHP = 0
@@ -180,10 +178,10 @@ func dpsChecker(posX, posY)
     dpsTimer++
   :
     dpsTimer = 0
-  
+
   ?dpsTimer = 0
     foeHPAndArmor = foe.hp + foe.armor
-  
+
   ?dpsTimer = updatespeed
     dps = foeHPAndArmor - (foe.hp + foe.armor)
 
@@ -252,7 +250,8 @@ func AAC2H(item2H)
 func useShield(shield)
   ?debug = true
     >c-42,8,shield@item.GetCooldown(shield)@
-  ?item.GetCooldown(shield) <= 0
+  ?item.GetCooldown(shield) <= 0 &
+  ^item.CanActivate(shield)
     equipR @shield@
     ?item.CanActivate(shield)
       activate R
@@ -269,9 +268,8 @@ func steal()
     return false
 
   ?item.GetCooldown(＂skeleton_arm＂) <= 0 &
-  ^(foe.hp + foe.armor) < 20 &
+  ^(foe.hp + foe.armor) < 44 &
   ^foe ! immune_to_physical &
-  ^foe ! boss &
   ^pickup.distance >= 20 &
   ^harvest.distance >= 20
     equip skeleton arm
@@ -452,23 +450,14 @@ func levelRocky(mainLO,healLO)
   ?loc ! rocky
     return false
   AAC1H(
-    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
+    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
   // // 自动铲石头
   // ?harvest = Boulder &
   // ^harvest.distance < 30
   //   equip shovel
-  ?foe = boss &
-  ^getWeakness() ! false &
-  ^string.IndexOf(
-    ^foe.buffs.string,
-    ^＂buff_protection＂
-  ^) = -1
-    AAC1H(
-      ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-      ^＂sword ＂+getWeakness()+＂ D *10 +20＂
-    ^)
+  
   ?foe.buffs.string
     adaptiveDef = foe.buffs.string
     adaptiveDef = string.Split(
@@ -486,33 +475,46 @@ func levelRocky(mainLO,healLO)
 
   ?adaptiveDef = Poison
     AAC1H(
-      ^＂sword Vigor D *10 +21＂,
-      ^＂sword Vigor D *10 +20＂
+      ^＂socketed_sword Vigor D *10 +21＂,
+      ^＂socketed_sword Vigor D *10 +20＂
     ^)
   :?adaptiveDef = Vigor
     AAC1H(
-      ^＂sword AEther D *10 +21＂,
-      ^＂sword AEther D *10 +20＂
+      ^＂socketed_sword AEther D *10 +21＂,
+      ^＂socketed_sword AEther D *10 +20＂
     ^)
   :?adaptiveDef = AEther
     AAC1H(
-      ^＂sword Fire D *10 +21＂,
-      ^＂sword Fire D *10 +20＂
+      ^＂socketed_sword Fire D *10 +21＂,
+      ^＂socketed_sword Fire D *10 +20＂
     ^)
   :?adaptiveDef = Fire
     AAC1H(
-      ^＂sword Ice D *10 +21＂,
-      ^＂sword Ice D *10 +20＂
+      ^＂socketed_sword Ice D *10 +21＂,
+      ^＂socketed_sword Ice D *10 +20＂
     ^)
   :?adaptiveDef = Ice
     AAC1H(
-      ^＂sword Poison D *10 +21＂,
-      ^＂sword Poison D *10 +20＂
+      ^＂socketed_sword Poison D *10 +21＂,
+      ^＂socketed_sword Poison D *10 +20＂
     ^)
-  
+  ?getWeakness() = false
+    AAC1H(
+      ^＂socketed_sword Vigor dL *10 +21＂,
+      ^＂socketed_sword Vigor dL *10 +20＂
+    ^)
   debuffAtk()
+  ?foe.armor > 0
+    AAC1H(
+      ^＂war hammer AEther D  *10 +21＂,
+      ^＂war hammer AEther aU *10 +20＂
+    ^)
+  useShield(bash)
   ?hp <= maxhp * LOW_HP_PERSENT
-    loadout 0
+    AAC1H(
+      ^＂socketed_sword Vigor dL *10 +21＂,
+      ^＂socketed_sword Vigor dL *10 +20＂
+    ^)
   ?foe.state = 115 & foe.time >= 60
     equipL mind stone
 /** 枯木峡谷
@@ -525,8 +527,8 @@ func levelDeadwood(mainLO,healLO,phyLO)
   ?loc ! deadwood
     return false
   AAC1H(
-    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
+    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
   debuffAtk()
   loopHealHP(healLO)
@@ -544,7 +546,7 @@ func levelDeadwood(mainLO,healLO,phyLO)
     equipR shield ah
   ?foe = boss & foe = phase2
     equipL war hammer *10 +21
-    equipR sword Vigor *10 +21
+    equipR socketed_sword Vigor *10 +21
 /** 恐怖洞窟
 *  在打完boss之后补满血
 *  mainLO: 主Loadout
@@ -618,7 +620,7 @@ func levelHalls(mainLO,healLO)
 
   ?loc = undead_crypt_boss_harder
     equipL wand Vigor
-    equipR sword Vigor *10 +21
+    equipR socketed_sword Vigor *10 +21
 
 /** 灼热矿井
 *  mainLO: 主Loadout
@@ -642,8 +644,8 @@ func levelMine(mainLO,healLO)
         ^)
       :
         AAC1H(
-          ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-          ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+          ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
+          ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
         ^)
       useShield(bash)
     // 躲锤子
@@ -666,8 +668,8 @@ func levelIcy(mainLO,healLO)
   ?loc ! icy
     return false
   AAC1H(
-    ^＂big sword Fire dF *10 +21＂,
-    ^＂big sword Fire D *10 +21＂
+    ^＂socketed_long_sword Fire D *10 +21＂,
+    ^＂socketed_long_sword Fire D *10 +20＂
   ^)
   ?foe ! ice_wall
     ?foe ! boss
@@ -684,8 +686,8 @@ func levelTemple(mainLO,healLO,magicLO)
   ?loc ! temple
     return false
   AAC1H(
-    ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-    ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
+    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
   debuffAtk()
   loopHealHP(healLO)
