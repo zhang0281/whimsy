@@ -232,13 +232,19 @@ func showInfo()
   myUtils.ShowFoesBar(19, 1, 30, false)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
-func AAC(iL,iR)
+func AAC1H(iL,iR)
   equipL @iL@
   equipR @iR@
   ?ai.idle
     equip skeleton
     equipL @iL@
     equipR @iR@
+/** 自动取消后摇 **/
+func AAC2H(item2H)
+  equip @item2H@
+  ?ai.idle
+    equip shield
+    equip @item2H@
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -447,7 +453,7 @@ func runFast()
 func levelRocky(mainLO,healLO)
   ?loc ! rocky
     return false
-  AAC(
+  AAC1H(
     ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
     ^＂sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
@@ -461,7 +467,7 @@ func levelRocky(mainLO,healLO)
     ^foe.buffs.string,
     ^＂buff_protection＂
   ^) = -1
-    AAC(
+    AAC1H(
       ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
       ^＂sword ＂+getWeakness()+＂ D *10 +20＂
     ^)
@@ -481,27 +487,27 @@ func levelRocky(mainLO,healLO)
     adaptiveDef = ＂＂
 
   ?adaptiveDef = Poison
-    AAC(
+    AAC1H(
       ^＂sword Vigor D *10 +21＂,
       ^＂sword Vigor D *10 +20＂
     ^)
   :?adaptiveDef = Vigor
-    AAC(
+    AAC1H(
       ^＂sword AEther D *10 +21＂,
       ^＂sword AEther D *10 +20＂
     ^)
   :?adaptiveDef = AEther
-    AAC(
+    AAC1H(
       ^＂sword Fire D *10 +21＂,
       ^＂sword Fire D *10 +20＂
     ^)
   :?adaptiveDef = Fire
-    AAC(
+    AAC1H(
       ^＂sword Ice D *10 +21＂,
       ^＂sword Ice D *10 +20＂
     ^)
   :?adaptiveDef = Ice
-    AAC(
+    AAC1H(
       ^＂sword Poison D *10 +21＂,
       ^＂sword Poison D *10 +20＂
     ^)
@@ -518,7 +524,7 @@ func levelRocky(mainLO,healLO)
 func levelDeadwood(mainLO,healLO,phyLO)
   ?loc ! deadwood
     return false
-  AAC(
+  AAC1H(
     ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
     ^＂sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
@@ -618,11 +624,35 @@ func levelMine(mainLO,healLO)
   ?loc ! mine
     return false
   equipWeaknessWand()
+  >`0,10,state:@foe.state@ time:@foe.time@
   ?foe = boss
-    AAC(
-      ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
-      ^＂sword ＂+getWeakness()+＂ D *10 +20＂
-    ^)
+    ?foe = guardian
+      AAC2H(＂Crossbow AEther D *10 +21＂)
+    //贴身攻击
+    ?foe.state = 33 &
+    ^foe.time <= 180
+      ?foe.armor > 0
+        AAC1H(
+          ^＂war hammer AEther D  *10 +21＂,
+          ^＂war hammer AEther aU *10 +20＂
+        ^)
+      :
+        AAC1H(
+          ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
+          ^＂sword ＂+getWeakness()+＂ D *10 +20＂
+        ^)
+      ?item.GetCooldown(＂bash＂) <= 0
+        equipR bash
+        ?item.CanActivate(＂bash＂)
+          activate R
+    // 躲锤子
+    ?foe.state = 32
+      ?foe.time >= 32
+        equipL mind stone
+    // 自爆
+    ?foe = explode
+      equipL wand Ice *10 +21
+      equipR wand @getWeakness()@ *10 +21
   loopHealHP(healLO)
   ?(foe = fluff | foe = explode) &
   ^foe.distance <= 5
@@ -634,7 +664,7 @@ func levelMine(mainLO,healLO)
 func levelIcy(mainLO,healLO)
   ?loc ! icy
     return false
-  AAC(
+  AAC1H(
     ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
     ^＂sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
@@ -647,7 +677,7 @@ func levelIcy(mainLO,healLO)
 func levelTemple(mainLO,healLO,magicLO)
   ?loc ! temple
     return false
-  AAC(
+  AAC1H(
     ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
     ^＂sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
