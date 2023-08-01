@@ -354,14 +354,8 @@ func debuffAtk()
   ? (!(foe &
   ^pickup.distance >= 20 &
   ^harvest.distance >= 20)) |
-  ^(foe=boss & loc=deadwood & foe=phase2) |
   ^ hp <= maxhp * LOW_HP_PERSENT |
   ^ foe = immune_to_ranged |
-  ^ loc = undead_crypt_boss_harder |
-  ^ (loc=rocky & foe=boss &
-  ^ foe.state = 115 & foe.time >= 60) |
-  ^ ghostBossFlag = true |
-  ^ needHealToMaxHp = true |
   ^ string.IndexOf(
     ^foe.buffs.string,
     ^＂buff_protection＂
@@ -370,39 +364,32 @@ func debuffAtk()
 
   var debuffStr = foe.debuffs.string
   ?string.IndexOf(
-    ^debuffStr,
-    ^＂debuff_damage:1＂
+    ^debuffStr,＂debuff_damage:1＂
   ^) = -1&
-    ^ foe ! immune_to_debuff_damage &
-    ^ foe ! immune_to_ranged
+    ^ foe ! immune_to_debuff_damage
     >`0,6,dbf poison
     equipL wand poison
     equipR shield ah
   :?string.IndexOf(
-    ^debuffStr,
-    ^＂debuff_chill:6＂
+    ^debuffStr,＂debuff_chill:6＂
   ^) = -1&
-    ^ foe ! immune_to_debuff_chill &
-    ^ foe ! immune_to_ranged
+    ^ foe ! immune_to_debuff_chill
     >`0,6,dbf ice
     equipL wand ice
     equipR shield ah
   :?string.IndexOf(
-    ^debuffStr,
-    ^＂debuff_dot:1＂
+    ^debuffStr,＂debuff_dot:1＂
   ^) = -1&
-    ^ foe ! immune_to_debuff_dot &
-    ^ foe ! immune_to_ranged
+    ^ foe ! immune_to_debuff_dot
     >`0,6,dbf fire
     equipL wand fire
     equipR shield ah
   :?string.IndexOf(
-    ^debuffStr,
-    ^＂stun:1＂
+    ^debuffStr,＂stun:1＂
   ^) = -1 &
     ^ foe ! immune_to_stun &
     ^ foe ! immune_to_physical &
-    ^ loc ! mine & foe ! explode
+    ^ (loc ! mine & foe ! explode)
     >`0,6,dbf stun
     equipL hammer *10 +21
     equipR shield ah
@@ -511,6 +498,8 @@ func levelRocky(mainLO,healLO)
       ^＂sword Poison D *10 +21＂,
       ^＂sword Poison D *10 +20＂
     ^)
+  
+  debuffAtk()
   ?hp <= maxhp * LOW_HP_PERSENT
     loadout 0
   ?foe.state = 115 & foe.time >= 60
@@ -528,6 +517,7 @@ func levelDeadwood(mainLO,healLO,phyLO)
     ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
     ^＂sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
+  debuffAtk()
   loopHealHP(healLO)
   // 魔免怪加载近战
   ?foe = immune_to_ranged
@@ -535,9 +525,9 @@ func levelDeadwood(mainLO,healLO,phyLO)
     ?ai.idle
       equipL wand ice *10 +21
       equip skeleton arm
-  // 自动砍树
-  ?harvest = Tree
-    equip hatchet
+  // // 自动砍树
+  // ?harvest = Tree
+  //   equip hatchet
   ?foe = wasp
     equipL wand ice
     equipR shield ah
@@ -553,6 +543,7 @@ func levelCaves(mainLO,healLO)
   ?loc ! caves
     return false
   loadout @mainLO@
+  debuffAtk()
   loopHealHP(healLO)
   ?foe = tiny_spider
     equipWeaknessWand()
@@ -564,6 +555,7 @@ func levelForest(mainLO,healLO)
   ?loc ! forest
     return false
   loadout @mainLO@
+  debuffAtk()
   loopHealHP(healLO)
   ?foe = ant
     equipWeaknessWand()
@@ -577,6 +569,7 @@ func levelHalls(mainLO,healLO)
   ?loc ! halls
     return false
   loadout @mainLO@
+  debuffAtk()
   loopHealHP(healLO)
   ?foe = immune_to_physical
     equipL wand Vigor
@@ -624,6 +617,7 @@ func levelMine(mainLO,healLO)
   ?loc ! mine
     return false
   equipWeaknessWand()
+  debuffAtk()
   >`0,10,state:@foe.state@ time:@foe.time@
   ?foe = boss
     ?foe = guardian
@@ -668,6 +662,7 @@ func levelIcy(mainLO,healLO)
     ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
     ^＂sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
+  debuffAtk()
   loopHealHP(healLO)
 /** 神庙
 *  mainLO: 主Loadout
@@ -681,6 +676,7 @@ func levelTemple(mainLO,healLO,magicLO)
     ^＂sword ＂+getWeakness()+＂ D *10 +21＂,
     ^＂sword ＂+getWeakness()+＂ D *10 +20＂
   ^)
+  debuffAtk()
   loopHealHP(healLO)
   // 魔免怪加载近战
   ?foe = immune_to_Vigor
@@ -718,7 +714,6 @@ autoPickup()
 
 //bladeMission35kill()
 //addRstBtn()
-debuffAtk()
 
 // 偷取道具
 steal()
