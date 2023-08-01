@@ -443,10 +443,8 @@ func runFast()
 
 /** 岩石高地
 *  自动铲石头
-*  mainLO: 主Loadout
-*  healLO: 治疗Loadout
 **/
-func levelRocky(mainLO,healLO)
+func levelRocky()
   ?loc ! rocky
     return false
   AAC1H(
@@ -504,11 +502,15 @@ func levelRocky(mainLO,healLO)
       ^＂socketed_sword Vigor dL *10 +20＂
     ^)
   debuffAtk()
+  >`0,10,state@foe.state@ time@foe.time@
   ?foe.armor > 0
     AAC1H(
       ^＂war hammer AEther D  *10 +21＂,
       ^＂war hammer AEther aU *10 +20＂
     ^)
+    ?foe.state = 107
+      equipL wand ice *10 +21
+      equipR wand Vigor *10 +21
   useShield(bash)
   ?hp <= maxhp * LOW_HP_PERSENT
     AAC1H(
@@ -519,11 +521,10 @@ func levelRocky(mainLO,healLO)
     equipL mind stone
 /** 枯木峡谷
 *  自动砍树
-*  mainLO: 主Loadout
 *  healLO: 治疗Loadout
 *  phyLO: 物理伤害Loadout
 **/
-func levelDeadwood(mainLO,healLO,phyLO)
+func levelDeadwood(healLO,phyLO)
   ?loc ! deadwood
     return false
   AAC1H(
@@ -623,10 +624,9 @@ func levelHalls(mainLO,healLO)
     equipR socketed_sword Vigor *10 +21
 
 /** 灼热矿井
-*  mainLO: 主Loadout
 *  healLO: 治疗Loadout
 **/
-func levelMine(mainLO,healLO)
+func levelMine(healLO)
   ?loc ! mine
     return false
   equipWeaknessWand()
@@ -661,10 +661,9 @@ func levelMine(mainLO,healLO)
   ^foe.distance <= 5
     equipL mind stone
 /** 不融山
-*  mainLO: 主Loadout
 *  healLO: 治疗Loadout
 **/
-func levelIcy(mainLO,healLO)
+func levelIcy(healLO)
   ?loc ! icy
     return false
   AAC1H(
@@ -678,11 +677,10 @@ func levelIcy(mainLO,healLO)
   ?foe ! ice_pillar
     loopHealHP(healLO)
 /** 神庙
-*  mainLO: 主Loadout
 *  healLO: 治疗Loadout
 *  magicLO: 魔法伤害Loadout
 **/
-func levelTemple(mainLO,healLO,magicLO)
+func levelTemple(healLO,magicLO)
   ?loc ! temple
     return false
   AAC1H(
@@ -710,14 +708,14 @@ func wildRide()
     :?pos.x = 255
       >o0,-2,hint: 打断 ,布洛希
 /** 执行对应关卡的策略 **/
-levelRocky(MAIN_LO,HEAL_LO)
-levelDeadwood(MAIN_LO,HEAL_LO,PHY_LO)
+levelRocky()
+levelDeadwood(HEAL_LO,PHY_LO)
 levelCaves(MAIN_LO,HEAL_LO)
 levelForest(MAIN_LO,HEAL_LO)
 levelHalls(MAIN_LO,HEAL_LO)
-levelMine(MAIN_LO,HEAL_LO)
-levelIcy(MAIN_LO,HEAL_LO)
-levelTemple(MAIN_LO,HEAL_LO,MAGIC_LO)
+levelMine(HEAL_LO)
+levelIcy(HEAL_LO)
+levelTemple(HEAL_LO,MAGIC_LO)
 // 宝箱小游戏提示
 freeChest()
 wildRide()
