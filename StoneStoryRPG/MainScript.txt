@@ -107,8 +107,8 @@ func showInfo()
 
   cdInfo.showCDWindow(screen.w - 10,6)
   myUtils.ShowTimeStats(1, 2)
-  myUtils.ShowTimer(13, 15)
-  dpsChecker.dpsChecker(0,15)
+  myUtils.ShowTimer(14, 15)
+  dpsChecker.dpsChecker(1,15)
   myUtils.ShowFoesBar(4, 1, 30, false)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
@@ -254,21 +254,21 @@ func debuffAtk()
     ^debuffStr,＂debuff_damage:1＂
   ^) = -1&
     ^ foe ! immune_to_debuff_damage
-    >`0,14,#C94277,debuff:poison
+    >`1,14,#C94277,debuff:poison
     equipL wand poison
     equipR shield ah
   :?string.IndexOf(
     ^debuffStr,＂debuff_chill:6＂
   ^) = -1&
     ^ foe ! immune_to_debuff_chill
-    >`0,14,#C94277,debuff:ice
+    >`1,14,#C94277,debuff:ice
     equipL wand ice
     equipR shield ah
   :?string.IndexOf(
     ^debuffStr,＂debuff_dot:1＂
   ^) = -1&
     ^ foe ! immune_to_debuff_dot
-    >`0,14,#C94277,debuff:fire
+    >`1,14,#C94277,debuff:fire
     equipL wand fire
     equipR shield ah
   :?string.IndexOf(
@@ -277,7 +277,7 @@ func debuffAtk()
     ^ foe ! immune_to_stun &
     ^ foe ! immune_to_physical &
     ^ (loc ! mine & foe ! explode)
-    >`0,14,#C94277,debuff:stun
+    >`1,14,#C94277,debuff:stun
     equipL hammer *10 +21
     equipR shield ah
 /** 使用面具的主动能力 **/
@@ -302,11 +302,12 @@ func useMask()
 func useHeavyHammer()
   ?foe.armor > 0 & 
   ^foe = boss
-    >`0,10,hammerTimer:@hammerTimer@\n
-    ^hammerFlag:@hammerFlag@\n
-    ^distance:@foe.distance@\n
-    ^GetCooldown:@item.GetCooldown(＂hammer＂)@\n
-    ^CanActivate:@item.CanActivate(＂hammer＂)@
+    ?debug = true
+      >`0,10,hammerTimer:@hammerTimer@\n
+      ^hammerFlag:@hammerFlag@\n
+      ^distance:@foe.distance@\n
+      ^GetCooldown:@item.GetCooldown(＂hammer＂)@\n
+      ^CanActivate:@item.CanActivate(＂hammer＂)@
     equip heavy hammer
     ?foe.distance <= 8
       ?item.GetCooldown(＂hammer＂) <= 0 | hammerFlag
