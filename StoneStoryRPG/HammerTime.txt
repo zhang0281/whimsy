@@ -1,0 +1,19 @@
+?loc.begin
+  var timer = 2 * 30
+  var hammerFlag = false
+?foe.count > 3 & foe.distance <= 5
+  ?item.getCooldown(＂hammer＂) <= 0
+    equip heavy hammer
+    ?item.Canactivate(＂hammer＂)
+      activate R
+      hammerFlag = true
+:
+  ?ai.idle
+    equipL wand
+    equip heavy hammer
+
+?timer > 0 
+  ?hammerFlag = true
+    timer--
+?timer <= 0
+  loc.leave()

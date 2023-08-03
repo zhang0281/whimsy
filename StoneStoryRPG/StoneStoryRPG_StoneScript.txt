@@ -28,7 +28,6 @@ import UI/BetterInfo2
   var MAIN_LO = 2
   var HEAL_LO = 3
   var MAGIC_LO = 4
-  var PHY_LO = 1
 
   var LOW_HP_PERSENT = 0.65
   var needHealToMaxHp = false
@@ -46,6 +45,7 @@ import UI/BetterInfo2
 ║骷髅手     ║
 ║堕神之剑    ║
 ║娜伽面具    ║
+║重  锤    ║
 ╚════════╝
 asciiend
   var dmgWindow = ascii
@@ -153,6 +153,7 @@ func showCDWindow(posX, posY)
   getItemIsCanUse(posX+6, posY+4, ＂skeleton_arm＂)
   getItemIsCanUse(posX+6, posY+5, ＂blade＂)
   getItemIsCanUse(posX+6, posY+6, ＂mask＂)
+  getItemIsCanUse(posX+6, posY+7, ＂hammer＂)
 /** 格式化数字输出 **/
 func formatNumOutput(num)
   var result = num
@@ -215,9 +216,9 @@ func showInfo()
     breakString(9,loc,loc.name)
     breakString(11,foe,foe.name)
     breakString(13,foe.buffs.string,＂buffs＂)
-    >c-42,9,
-    ^L:@item.left@\n
-    ^R:@item.right@\n
+  >c-42,9,
+  ^L:@item.left@\n
+  ^R:@item.right@\n
 
   >c-25,11,
     ^@getColor(hp <= maxhp * LOW_HP_PERSENT)@,
@@ -249,9 +250,8 @@ func AAC2H(item2H)
 /** 使用指定盾牌 **/
 func useShield(shield)
   ?debug = true
-    >c-42,8,shield@item.GetCooldown(shield)@
-  ?item.GetCooldown(shield) <= 0 &
-  ^item.CanActivate(shield)
+    >c-42,8,@shield@ @item.GetCooldown(shield)@ @item.CanActivate(shield)@
+  ?item.GetCooldown(shield) = -1
     equipR @shield@
     ?item.CanActivate(shield)
       activate R
@@ -418,6 +418,14 @@ func useMask()
       >o-2,-3,#ffcccc,使用面具
       return true
   return false
+/** 使用重锤的主动能力 **/
+func useHeavyHammer()
+  ?foe.armor > 0 & foe = boss
+    // AAC2H(＂heavy hammer *10 +21＂)
+    ?item.GetCooldown(＂hammer＂) <= 0
+      equip heavy hammer
+      ?item.CanActivate(＂hammer＂)
+        activate R
 /** 自动拾取
  *  距离可拾取物品足够近的时候
  *  自动拾取物品
@@ -522,9 +530,8 @@ func levelRocky()
 /** 枯木峡谷
 *  自动砍树
 *  healLO: 治疗Loadout
-*  phyLO: 物理伤害Loadout
 **/
-func levelDeadwood(healLO,phyLO)
+func levelDeadwood(healLO)
   ?loc ! deadwood
     return false
   AAC1H(
@@ -535,10 +542,10 @@ func levelDeadwood(healLO,phyLO)
   loopHealHP(healLO)
   // 魔免怪加载近战
   ?foe = immune_to_ranged
-    loadout @phyLO@
-    ?ai.idle
-      equipL wand ice *10 +21
-      equip skeleton arm
+    AAC1H(
+      ^＂socketed_sword Vigor dL *10 +21＂,
+      ^＂socketed_sword Vigor dL *10 +20＂
+    ^)
   // // 自动砍树
   // ?harvest = Tree
   //   equip hatchet
@@ -570,6 +577,7 @@ func levelForest(mainLO,healLO)
     return false
   loadout @mainLO@
   debuffAtk()
+  useHeavyHammer()
   loopHealHP(healLO)
   ?foe = ant
     equipWeaknessWand()
@@ -629,7 +637,7 @@ func levelHalls(mainLO,healLO)
 func levelMine(healLO)
   ?loc ! mine
     return false
-  equipWeaknessWand()
+  // equipWeaknessWand()
   debuffAtk()
   ?foe = boss
     ?foe = guardian
@@ -709,7 +717,7 @@ func wildRide()
       >o0,-2,hint: 打断 ,布洛希
 /** 执行对应关卡的策略 **/
 levelRocky()
-levelDeadwood(HEAL_LO,PHY_LO)
+levelDeadwood(HEAL_LO)
 levelCaves(MAIN_LO,HEAL_LO)
 levelForest(MAIN_LO,HEAL_LO)
 levelHalls(MAIN_LO,HEAL_LO)
