@@ -95,10 +95,14 @@ func showInfo()
     itemR = string.Split(item.right,＂ ＂,true)［0］
   :
     itemR = ＂#＂
+  var itemSpace = ＂＂
+  var itemSpaceNum = 15 - string.Size(itemL) - string.Size(itemR)
+  ?itemSpaceNum > 0
+    for i = 1..itemSpaceNum
+      itemSpace = itemSpace + ＂#＂
   // 显示当前装备的道具
-  >c-42,9,#51D6FF,
-  ^L:@itemL@\n
-  ^R:@itemR@\n
+  >c-42,10,#51D6FF,
+  ^L:@itemL@@itemSpace@R:@itemR@\n
 
   // 显示药水
   ?item.potion = empty
