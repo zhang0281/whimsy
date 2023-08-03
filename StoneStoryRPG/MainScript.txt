@@ -76,22 +76,40 @@ func showInfo()
     util.breakString(9,loc,loc.name)
     util.breakString(11,foe,foe.name)
     util.breakString(13,foe.buffs.string,＂buffs＂)
+  // 显示当前装备的道具
   >c-42,9,
   ^L:@item.left@\n
   ^R:@item.right@\n
 
-  >c-25,11,
-    ^@util.getColor(hp <= maxhp * LOW_HP_PERSENT)@,
-    ^@maxhp * LOW_HP_PERSENT@
-  >c-42,11,
+  // 显示药水
+  ?item.potion = empty
+    >c-42,11,
+      ^@util.getColor(false)@,
+      ^空瓶子
+  :
+    var potionNameAtIP = 
+      ^string.IndexOf(item.potion, "药水") - 2
+    var potionName = string.Sub(
+      ^item.potion, potionNameAtIP, 4
+    ^)
+    >c-42,11,
+      ^@util.getColor(true)@,
+      ^@potionName@
+
+  // 显示是否需要回满血
+  >c-37,11,
     ^@util.getColor(needHealToMaxHp)@,
     ^NeedHealToMaxHp
+  // 显示低HP血量
+  >c-21,11,
+    ^@util.getColor(hp <= maxhp * LOW_HP_PERSENT)@,
+    ^@maxhp * LOW_HP_PERSENT@
 
-  cdInfo.showCDWindow(9,1)
-  myUtils.ShowTimeStats(19, 2)
-  myUtils.ShowTimer(33, 2)
-  dpsChecker.dpsChecker(41,2)
-  myUtils.ShowFoesBar(19, 1, 30, false)
+  cdInfo.showCDWindow(screen.w - 10,6)
+  myUtils.ShowTimeStats(1, 2)
+  myUtils.ShowTimer(13, 15)
+  dpsChecker.dpsChecker(0,15)
+  myUtils.ShowFoesBar(4, 1, 30, false)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
 func AAC1H(iL,iR)
@@ -236,21 +254,21 @@ func debuffAtk()
     ^debuffStr,＂debuff_damage:1＂
   ^) = -1&
     ^ foe ! immune_to_debuff_damage
-    >`0,6,#C94277,dbf poison
+    >`0,14,#C94277,dbf poison
     equipL wand poison
     equipR shield ah
   :?string.IndexOf(
     ^debuffStr,＂debuff_chill:6＂
   ^) = -1&
     ^ foe ! immune_to_debuff_chill
-    >`0,6,#C94277,dbf ice
+    >`0,14,#C94277,dbf ice
     equipL wand ice
     equipR shield ah
   :?string.IndexOf(
     ^debuffStr,＂debuff_dot:1＂
   ^) = -1&
     ^ foe ! immune_to_debuff_dot
-    >`0,6,#C94277,dbf fire
+    >`0,14,#C94277,dbf fire
     equipL wand fire
     equipR shield ah
   :?string.IndexOf(
@@ -259,7 +277,7 @@ func debuffAtk()
     ^ foe ! immune_to_stun &
     ^ foe ! immune_to_physical &
     ^ (loc ! mine & foe ! explode)
-    >`0,6,#C94277,dbf stun
+    >`0,14,#C94277,dbf stun
     equipL hammer *10 +21
     equipR shield ah
 /** 使用面具的主动能力 **/
@@ -515,8 +533,7 @@ func levelMine(healLO)
   ?loc.loop
     needHealToMaxHp = false
   equipWeaknessWand()
-  ?foe ! boss
-    debuffAtk()
+  debuffAtk()
   ?foe = boss
     ?foe = guardian
       equip Crossbow AEther D *10 +21
