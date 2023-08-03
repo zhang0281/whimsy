@@ -26,9 +26,14 @@ func getItemIsCanUse(posX, posY, itemStr)
 /** 显示CD相关信息 **/
 func showCDWindow(posX, posY)
   >`@posX@,@posY@,#347FC4,@cdWindow@
+  /*
+  Bardiche	"bardiche"
+  Hatchet	"hatchet"
+  Quarterstaff	"quarterstaff"
+  */
   getItemIsCanUse(posX+6, posY+1, ＂bash＂)
-  getItemIsCanUse(posX+6, posY+2, ＂shield dash *10＂)
-  getItemIsCanUse(posX+6, posY+3, ＂mind stone＂)
+  getItemIsCanUse(posX+6, posY+2, ＂dash＂)
+  getItemIsCanUse(posX+6, posY+3, ＂mind＂)
   getItemIsCanUse(posX+6, posY+4, ＂skeleton_arm＂)
   getItemIsCanUse(posX+6, posY+5, ＂blade＂)
   getItemIsCanUse(posX+6, posY+6, ＂mask＂)

@@ -294,7 +294,7 @@ func useHeavyHammer()
       ?item.GetCooldown(＂hammer＂) <= 0 | hammerFlag
         ?item.CanActivate(＂hammer＂)
           hammerFlag = true
-    ?hammerTimer < 2*30 &
+    ?hammerTimer < 30 &
     ^hammerFlag = true
       hammerTimer++
     :
@@ -512,7 +512,9 @@ func levelHalls(mainLO,healLO)
 func levelMine(healLO)
   ?loc ! mine
     return false
-  // equipWeaknessWand()
+  ?loc.loop
+    needHealToMaxHp = false
+  equipWeaknessWand()
   ?foe ! boss
     debuffAtk()
   ?foe = boss
