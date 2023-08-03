@@ -163,7 +163,8 @@ func useShield(shield)
 **/
 func steal()
   ?(foe=boss & loc=deadwood & foe=phase2) |
-  ^loc = undead_crypt_boss_harder
+  ^loc = undead_crypt_boss_harder |
+  ^loc = bronze_guardian_harder
     return false
 
   ?item.GetCooldown(＂skeleton_arm＂) <= 0 &
