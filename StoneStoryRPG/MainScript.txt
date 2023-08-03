@@ -77,10 +77,28 @@ func showInfo()
     util.breakString(9,loc,loc.name)
     util.breakString(11,foe,foe.name)
     util.breakString(13,foe.buffs.string,＂buffs＂)
+    // 显示当前装备的道具
+    >c-42,9,#51D6FF,
+    ^L:@item.left@\n
+    ^R:@item.right@\n
+    // 显示药水
+    >c-42,11,
+      ^@util.getColor(true)@,
+      ^@item.potion@
+  var itemL
+  ?item.left
+    itemL = string.Split(item.left,＂ ＂,true)［0］
+  :
+    itemL = ＂#＂
+  var itemR
+  ?item.right
+    itemR = string.Split(item.right,＂ ＂,true)［0］
+  :
+    itemR = ＂#＂
   // 显示当前装备的道具
-  >c-42,9,
-  ^L:@item.left@\n
-  ^R:@item.right@\n
+  >c-42,9,#51D6FF,
+  ^L:@itemL@\n
+  ^R:@itemR@\n
 
   // 显示药水
   ?item.potion = empty
