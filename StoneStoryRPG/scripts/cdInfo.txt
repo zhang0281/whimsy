@@ -1,0 +1,35 @@
+
+?loc.begin
+  var util = new StoneStoryRPG/scripts/util
+  var cdWindow = ascii
+╔  CD显示  ╗
+║冲撞盾牌    ║
+║冲刺盾牌    ║
+║意念之石    ║
+║骷髅手     ║
+║堕神之剑    ║
+║娜伽面具    ║
+║重  锤    ║
+╚════════╝
+asciiend
+  
+/** 显示指定道具的冷却时间 **/
+func getItemIsCanUse(posX, posY, itemStr)
+  ?item.GetCooldown(itemStr) <=0
+    >`@posX@,@posY@,
+      ^@util.getColor(true)@,
+      ^RDY
+  :
+    >`@posX@,@posY@,
+      ^@util.getColor(false)@,
+      ^@item.GetCooldown(itemStr) / 30@s
+/** 显示CD相关信息 **/
+func showCDWindow(posX, posY)
+  >`@posX@,@posY@,#347FC4,@cdWindow@
+  getItemIsCanUse(posX+6, posY+1, ＂bash＂)
+  getItemIsCanUse(posX+6, posY+2, ＂shield dash *10＂)
+  getItemIsCanUse(posX+6, posY+3, ＂mind stone＂)
+  getItemIsCanUse(posX+6, posY+4, ＂skeleton_arm＂)
+  getItemIsCanUse(posX+6, posY+5, ＂blade＂)
+  getItemIsCanUse(posX+6, posY+6, ＂mask＂)
+  getItemIsCanUse(posX+6, posY+7, ＂hammer＂)

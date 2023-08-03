@@ -1,0 +1,64 @@
+
+?loc.begin | loc.loop
+  var updatespeed = 30
+  var dpsTimer = 0
+
+  var dps = 0
+  var foeHPAndArmor = 0
+  var averagedmg = 0
+  var times = 0
+  var totaldmg = 0
+  var dmgWindow = ascii
+╔   DPS显示   ╗
+║CurDPS:    ║
+║DPSTms:    ║
+║TtDMG :    ║
+║AvgDPS:    ║
+╚═══════════╝
+asciiend
+
+/** 格式化数字输出 **/
+func formatNumOutput(num)
+  var result = num
+  result = num
+  ?string.Size(num+＂＂) > 16
+    result = (num/1000/1000/1000/1000)+T
+  :?string.Size(num+＂＂) > 12
+    result = (num/1000/1000/1000)+B
+  :?string.Size(num+＂＂) > 8
+    result = (num/1000/1000)+M
+  :?string.Size(num+＂＂) > 4
+    result = (num/1000)+K
+  ?string.Size(result+＂＂) = 4
+    return result
+  var spaceNum = 4-string.Size(result+＂＂)
+  var spaceStr = ＂＂
+  for i = 1..spaceNum
+    spaceStr = spaceStr + ＂#＂
+  return spaceStr+result
+/** 显示DPS **/
+func dpsChecker(posX, posY)
+  ?dpsTimer <= updatespeed
+    dpsTimer++
+  :
+    dpsTimer = 0
+
+  ?dpsTimer = 0
+    foeHPAndArmor = foe.hp + foe.armor
+
+  ?dpsTimer = updatespeed
+    dps = foeHPAndArmor - (foe.hp + foe.armor)
+
+    ?dps > 0
+      totaldmg = totaldmg + dps
+      times ++
+
+  ?dps < 0
+    dps=0
+  ?times > 0
+    averagedmg = totaldmg / times
+  >`@posX@,@posY@,#CADBC0,@dmgWindow@
+  >`@posX+8@,@posY+1@,#CADBC0,@formatNumOutput(dps)@
+  >`@posX+8@,@posY+2@,#CADBC0,@formatNumOutput(times)@
+  >`@posX+8@,@posY+3@,#CADBC0,@formatNumOutput(totaldmg)@
+  >`@posX+8@,@posY+4@,#CADBC0,@formatNumOutput(averagedmg)@

@@ -1,0 +1,40 @@
+
+/** 根据传入的bool型变量返回指定颜色
+ *  bool: 指定bool类型变量
+**/
+func getColor(bool)
+  ?bool = true
+    return ＂#37FF8B＂
+  :
+    return ＂#B5446E＂
+/** 在屏幕指定位置输出消息
+ *  posY:屏幕Y轴坐标
+ *  message 需要输出的消息,可以是变量名
+ **/
+func Print(posY,message)
+  >`1,@posY@,#ffc57f,@message@
+/** 拆分字符串
+ *  当信息超出一行的时候拆分成两行显示
+**/
+func breakString(posY,s,atS)
+  ?s
+    var a = string.Break(s, 60)
+    ? a.Count() = 1
+        >`1,@posY@,#ffc57f,@atS@:@a［0］@
+    :
+      for i = 0 .. a.Count()-1
+        >`1,@posY+i@,#ffc57f,@atS@_@i+1@:@a［i］@
+
+/** 获取弱点 **/
+func getWeakness()
+  ?foe = ＂Vigor＂
+    return ＂Poison＂
+  ?foe = ＂AEther＂
+    return ＂Vigor＂
+  ?foe = ＂Fire＂
+    return ＂AEther＂
+  ?foe = ＂ Ice＂
+    return ＂Fire＂
+  ?foe = ＂ Poison＂
+    return ＂Ice＂
+  return false

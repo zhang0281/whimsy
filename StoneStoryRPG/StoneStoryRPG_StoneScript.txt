@@ -1,16 +1,4 @@
 // https://StoneStoryRPG.com/stonescript
-// https://stonestoryrpg.com/stonescript/manual.html
-
-/*Poison (∞) in the Caves of Fear and the Temple
-Vigor  (♥) in the Mushroom Forest
-Æther  (*) in the Haunted Halls
-Fire   (φ) in the Bronze Mines
-Ice    (❄) in the Icy Ridge
-恐怖洞窟 & 神庙 中的 毒药(∞)
-蘑菇森林 里的 活力(♥)
-亡者之殿 中的 以太 (*)
-灼热矿井 中的 火 (φ)
-不融山中 的 冰 (❄)*/
 
 //import Cosmetics/Hats/Skully
 import Cosmetics/PetBoo
@@ -19,6 +7,10 @@ import UI/BetterInfo2
 
 /** 预设变量 **/
 ?loc.begin
+  var dpsChecker = new StoneStoryRPG/scripts/dpsChecker
+  var cdInfo = new StoneStoryRPG/scripts/cdInfo
+  var util = new StoneStoryRPG/scripts/util
+
   var freeChestTracker =
   ^import UI/FreeChestTracker
   var myUtils = new UI/OkamiroyUtils
@@ -37,39 +29,11 @@ import UI/BetterInfo2
   var ghostBossFlag = false
   var timer = 3*30
   var timer2 = 7*30
-  var cdWindow = ascii
-╔  CD显示  ╗
-║冲撞盾牌    ║
-║冲刺盾牌    ║
-║意念之石    ║
-║骷髅手     ║
-║堕神之剑    ║
-║娜伽面具    ║
-║重  锤    ║
-╚════════╝
-asciiend
-  var dmgWindow = ascii
-╔   DPS显示   ╗
-║CurDPS:    ║
-║DPSTms:    ║
-║TtDMG :    ║
-║AvgDPS:    ║
-╚═══════════╝
-asciiend
 
 ?loc.begin | loc.loop
   ghostBossFlag = false
   timer = 3*30
   timer2 = 7*30
-
-  var updatespeed = 30
-  var dpsTimer = 0
-
-  var dps = 0
-  var foeHPAndArmor = 0
-  var averagedmg = 0
-  var times = 0
-  var totaldmg = 0
 
   var aacTimer = 0
   var DEFAULT_FRAME = 15
@@ -78,49 +42,10 @@ asciiend
 
 debug = false
 
-/** 在屏幕指定位置输出消息
- *  posY:屏幕Y轴坐标
- *  message 需要输出的消息,可以是变量名
- **/
-func Print(posY,message)
-  >`1,@posY@,#ffc57f,@message@
-/** 拆分字符串
- *  当信息超出一行的时候拆分成两行显示
-**/
-func breakString(posY,s,atS)
-  ?s
-    var a = string.Break(s, 60)
-    ? a.Count() = 1
-        >`1,@posY@,#ffc57f,@atS@:@a［0］@
-    :
-      for i = 0 .. a.Count()-1
-        >`1,@posY+i@,#ffc57f,@atS@_@i+1@:@a［i］@
-
-/** 获取弱点 **/
-func getWeakness()
-  ?foe = ＂Vigor＂
-    return ＂Poison＂
-  ?foe = ＂AEther＂
-    return ＂Vigor＂
-  ?foe = ＂Fire＂
-    return ＂AEther＂
-  ?foe = ＂ Ice＂
-    return ＂Fire＂
-  ?foe = ＂ Poison＂
-    return ＂Ice＂
-  return false
 /** 装备针对当前敌人弱点的wand(魔杖) **/
 func equipWeaknessWand()
-  equipL wand @getWeakness()@ *10 +21
+  equipL wand @util.getWeakness()@ *10 +21
   equipR shield ah
-/** 根据传入的bool型变量返回指定颜色
- *  bool: 指定bool类型变量
-**/
-func getColor(bool)
-  ?bool = true
-    return ＂#37FF8B＂
-  :
-    return ＂#B5446E＂
 /** 在循环后自动回满HP **/
 func loopHealHP(healLO)
   ?hp <= maxhp * LOW_HP_PERSENT
@@ -134,71 +59,6 @@ func loopHealHP(healLO)
     loadout @healLO@
     ?hp = maxhp
       needHealToMaxHp = false
-/** 显示指定道具的冷却时间 **/
-func getItemIsCanUse(posX, posY, itemStr)
-  ?item.GetCooldown(itemStr) <=0
-    >`@posX@,@posY@,
-      ^@getColor(true)@,
-      ^RDY
-  :
-    >`@posX@,@posY@,
-      ^@getColor(false)@,
-      ^@item.GetCooldown(itemStr) / 30@s
-/** 显示CD相关信息 **/
-func showCDWindow(posX, posY)
-  >`@posX@,@posY@,#347FC4,@cdWindow@
-  getItemIsCanUse(posX+6, posY+1, ＂bash＂)
-  getItemIsCanUse(posX+6, posY+2, ＂shield dash *10＂)
-  getItemIsCanUse(posX+6, posY+3, ＂mind stone＂)
-  getItemIsCanUse(posX+6, posY+4, ＂skeleton_arm＂)
-  getItemIsCanUse(posX+6, posY+5, ＂blade＂)
-  getItemIsCanUse(posX+6, posY+6, ＂mask＂)
-  getItemIsCanUse(posX+6, posY+7, ＂hammer＂)
-/** 格式化数字输出 **/
-func formatNumOutput(num)
-  var result = num
-  result = num
-  ?string.Size(num+＂＂) > 16
-    result = (num/1000/1000/1000/1000)+T
-  :?string.Size(num+＂＂) > 12
-    result = (num/1000/1000/1000)+B
-  :?string.Size(num+＂＂) > 8
-    result = (num/1000/1000)+M
-  :?string.Size(num+＂＂) > 4
-    result = (num/1000)+K
-  ?string.Size(result+＂＂) = 4
-    return result
-  var spaceNum = 4-string.Size(result+＂＂)
-  var spaceStr = ＂＂
-  for i = 1..spaceNum
-    spaceStr = spaceStr + ＂#＂
-  return spaceStr+result
-/** 显示DPS **/
-func dpsChecker(posX, posY)
-  ?dpsTimer <= updatespeed
-    dpsTimer++
-  :
-    dpsTimer = 0
-
-  ?dpsTimer = 0
-    foeHPAndArmor = foe.hp + foe.armor
-
-  ?dpsTimer = updatespeed
-    dps = foeHPAndArmor - (foe.hp + foe.armor)
-
-    ?dps > 0
-      totaldmg = totaldmg + dps
-      times ++
-
-  ?dps < 0
-    dps=0
-  ?times > 0
-    averagedmg = totaldmg / times
-  >`@posX@,@posY@,#CADBC0,@dmgWindow@
-  >`@posX+8@,@posY+1@,#CADBC0,@formatNumOutput(dps)@
-  >`@posX+8@,@posY+2@,#CADBC0,@formatNumOutput(times)@
-  >`@posX+8@,@posY+3@,#CADBC0,@formatNumOutput(totaldmg)@
-  >`@posX+8@,@posY+4@,#CADBC0,@formatNumOutput(averagedmg)@
 
 /** 显示自定义变量的值 **/
 func showInfo()
@@ -213,24 +73,24 @@ func showInfo()
     return false
 
   ?debug = true
-    breakString(9,loc,loc.name)
-    breakString(11,foe,foe.name)
-    breakString(13,foe.buffs.string,＂buffs＂)
+    util.breakString(9,loc,loc.name)
+    util.breakString(11,foe,foe.name)
+    util.breakString(13,foe.buffs.string,＂buffs＂)
   >c-42,9,
   ^L:@item.left@\n
   ^R:@item.right@\n
 
   >c-25,11,
-    ^@getColor(hp <= maxhp * LOW_HP_PERSENT)@,
+    ^@util.getColor(hp <= maxhp * LOW_HP_PERSENT)@,
     ^@maxhp * LOW_HP_PERSENT@
   >c-42,11,
-    ^@getColor(needHealToMaxHp)@,
+    ^@util.getColor(needHealToMaxHp)@,
     ^NeedHealToMaxHp
 
-  showCDWindow(9,1)
+  cdInfo.showCDWindow(9,1)
   myUtils.ShowTimeStats(19, 2)
   myUtils.ShowTimer(33, 2)
-  dpsChecker(41,2)
+  dpsChecker.dpsChecker(41,2)
   myUtils.ShowFoesBar(19, 1, 30, false)
   myUtils.ShowPlayersBar(3, -5, 7)
 /** 自动取消后摇 **/
@@ -349,8 +209,8 @@ func bladeMission35kill()
         ^string.Join(＂ ＂, monsArr)
       ^)
 
-  breakString(10,foe.name,@nowMon)
-  breakString(
+  util.breakString(10,foe.name,@nowMon)
+  util.breakString(
     ^11,
     ^storage.Get(＂blade_used_monsters＂),
     ^＂monsNum＂ + string.Split(
@@ -418,14 +278,31 @@ func useMask()
       >o-2,-3,#ffcccc,使用面具
       return true
   return false
-/** 使用重锤的主动能力 **/
+?loc.begin | loc.loop
+  var hammerTimer = 0
+  var hammerFlag = false
 func useHeavyHammer()
-  ?foe.armor > 0 & foe = boss
-    // AAC2H(＂heavy hammer *10 +21＂)
-    ?item.GetCooldown(＂hammer＂) <= 0
-      equip heavy hammer
-      ?item.CanActivate(＂hammer＂)
-        activate R
+  ?foe.armor > 0 & 
+  ^foe = boss
+    >`0,10,hammerTimer:@hammerTimer@\n
+    ^hammerFlag:@hammerFlag@\n
+    ^distance:@foe.distance@\n
+    ^GetCooldown:@item.GetCooldown(＂hammer＂)@\n
+    ^CanActivate:@item.CanActivate(＂hammer＂)@
+    equip heavy hammer
+    ?foe.distance <= 8
+      ?item.GetCooldown(＂hammer＂) <= 0 | hammerFlag
+        ?item.CanActivate(＂hammer＂)
+          hammerFlag = true
+    ?hammerTimer < 2*30 &
+    ^hammerFlag = true
+      hammerTimer++
+    :
+      hammerTimer = 0
+      hammerFlag = false
+    ?hammerTimer >= 10
+      >`0,2,activateR
+      activate R
 /** 自动拾取
  *  距离可拾取物品足够近的时候
  *  自动拾取物品
@@ -456,8 +333,8 @@ func levelRocky()
   ?loc ! rocky
     return false
   AAC1H(
-    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
-    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
+    ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +21＂,
+    ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +20＂
   ^)
   // // 自动铲石头
   // ?harvest = Boulder &
@@ -504,7 +381,7 @@ func levelRocky()
       ^＂socketed_sword Poison D *10 +21＂,
       ^＂socketed_sword Poison D *10 +20＂
     ^)
-  ?getWeakness() = false
+  ?util.getWeakness() = false
     AAC1H(
       ^＂socketed_sword Vigor dL *10 +21＂,
       ^＂socketed_sword Vigor dL *10 +20＂
@@ -535,8 +412,8 @@ func levelDeadwood(healLO)
   ?loc ! deadwood
     return false
   AAC1H(
-    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
-    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
+    ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +21＂,
+    ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +20＂
   ^)
   debuffAtk()
   loopHealHP(healLO)
@@ -556,7 +433,6 @@ func levelDeadwood(healLO)
     equipL war hammer *10 +21
     equipR socketed_sword Vigor *10 +21
 /** 恐怖洞窟
-*  在打完boss之后补满血
 *  mainLO: 主Loadout
 *  healLO: 治疗Loadout
 **/
@@ -577,7 +453,6 @@ func levelForest(mainLO,healLO)
     return false
   loadout @mainLO@
   debuffAtk()
-  useHeavyHammer()
   loopHealHP(healLO)
   ?foe = ant
     equipWeaknessWand()
@@ -623,7 +498,7 @@ func levelHalls(mainLO,healLO)
           ghostBossFlag = true
   ?debug = true
     >`1,8,
-    ^@getColor(ghostBossFlag)@,
+    ^@util.getColor(ghostBossFlag)@,
     ^timer:@timer@,
     ^timer2:@timer2@
 
@@ -638,24 +513,27 @@ func levelMine(healLO)
   ?loc ! mine
     return false
   // equipWeaknessWand()
-  debuffAtk()
+  ?foe ! boss
+    debuffAtk()
   ?foe = boss
     ?foe = guardian
-      AAC2H(＂Crossbow AEther D *10 +21＂)
+      equip Crossbow AEther D *10 +21
     //贴身攻击
     ?foe.state = 33 &
     ^foe.time <= 180
-      ?foe.armor > 0
-        AAC1H(
-          ^＂war hammer AEther D  *10 +21＂,
-          ^＂war hammer AEther aU *10 +20＂
-        ^)
+      ?item.GetCooldown(＂hammer＂) <= 0 | hammerFlag = true
+        useHeavyHammer()
       :
-        AAC1H(
-          ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
-          ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
-        ^)
-      useShield(bash)
+        ?foe.armor > 0
+          AAC1H(
+            ^＂war hammer AEther D  *10 +21＂,
+            ^＂war hammer AEther aU *10 +20＂
+          ^)
+        :
+          AAC1H(
+            ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +21＂,
+            ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +20＂
+          ^)
     // 躲锤子
     ?foe.state = 32
       ?foe.time >= 32
@@ -663,8 +541,9 @@ func levelMine(healLO)
     // 自爆
     ?foe = explode
       equipL wand Ice *10 +21
-      equipR wand @getWeakness()@ *10 +21
+      equipR wand @util.getWeakness()@ *10 +21
   loopHealHP(healLO)
+  
   ?(foe = fluff | foe = explode) &
   ^foe.distance <= 5
     equipL mind stone
@@ -692,8 +571,8 @@ func levelTemple(healLO,magicLO)
   ?loc ! temple
     return false
   AAC1H(
-    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +21＂,
-    ^＂socketed_sword ＂+getWeakness()+＂ D *10 +20＂
+    ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +21＂,
+    ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +20＂
   ^)
   debuffAtk()
   loopHealHP(healLO)

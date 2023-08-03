@@ -1,0 +1,146 @@
+
+
+
+/*
+for an example, lets say there is a crossbow that takes 20 frames to finish shooting
+we want to refresh it the moment the projectile is fired
+
+aac learning script starts off with resetting the animation at 19 frames
+it then waits a little time, and checks for whether the enemy took damage
+the enemy takes damage, so the script knows the AAC succeeded
+
+the timer is then -1 to 18
+the enemy takes damage, still valid
+
+...loop a few times
+
+the timer is then -1 to 14
+suddenly, the enemy stops taking damage
+the animation was reset too soon
+
+we now know this aac is 1 frame too fast
+so 14 + 1 = 15
+our perfect AAC time 
+
+-----------谷歌翻译-----------
+
+例如,可以说有一个cross需要20帧才能完成射击
+我们想刷新弹丸发射的那一刻
+
+AAC学习脚本首先以19帧重置动画
+然后等待一点时间,检查敌人是否受到伤害
+敌人受到伤害,因此剧本知道AAC成功了
+
+计时器为-1至18
+敌人受到伤害,仍然有效
+
+...循环几次
+
+计时器为-1至14
+突然,敌人不再受到伤害
+动画重置为时太早了
+
+我们现在知道这是1帧太快的AAC
+所以14 + 1 = 15
+我们完美的AAC时间
+*/
+
+?loc.begin | loc.loop
+  var updatespeed = 30
+  var dpsTimer = 0
+
+  var dps=0
+  var foeHPAndArmor = 0
+  var averagedmg = 0
+  var times = 0
+  var totaldmg = 0
+func output4(num)
+  ?num > 999
+    return num
+  :?num > 99
+    return ＂#＂+num
+  :?num > 9
+    return ＂##＂+num
+  :
+    return ＂###＂+num
+func dpsChecker()
+  ?dpsTimer <= updatespeed
+    dpsTimer++
+  :
+    dpsTimer = 0
+  
+  ?dpsTimer = 0
+    foeHPAndArmor = foe.hp + foe.armor
+  
+  ?dpsTimer = updatespeed
+    dps = foeHPAndArmor - (foe.hp + foe.armor)
+
+    ?dps > 0
+      totaldmg = totaldmg + dps
+      times ++
+
+  ?dps < 0
+    dps=0
+  ?times > 0
+    averagedmg = totaldmg / times
+  
+  // >`0,14,#ffffff,Damage / Sec  :@output4(dps)@
+  // >`0,15,#ffffff,Time in Combat:@output4(times)@
+  // >`0,16,#ffffff,Total Damage  :@output4(totaldmg)@
+  // >`0,17,#ffffff,Average Damage:@output4(averagedmg)@
+  
+  var dmgWindow = ascii
+╔  DMG显示   ╗
+║          ║
+║          ║
+║          ║
+║          ║
+╚══════════╝
+asciiend
+  >`28,1,#white,@dmgWindow@
+  >`29,2,#ffffff,DMG/s:@output4(dps)@
+  >`29,3,#ffffff,Times:@output4(times)@
+  >`29,4,#ffffff,T DMG:@output4(totaldmg)@
+  >`29,5,#ffffff,A DMG:@output4(averagedmg)@
+
+?loc.begin | loc.loop
+  var DEFAULT_FRAME = 15
+  var timer = 0
+  var foeHP = 0
+  var changeLR = false
+func AAC(iL,iR)
+  ?foe.distance > 5
+    return false
+  ?changeLR = false
+    equipL @iL@
+    equipR @iR@
+  :
+    equipL @iR@
+    equipR @iL@
+  ?timer <= DEFAULT_FRAME
+    timer++
+  :
+    timer = 0
+
+  ?timer = 0
+    changeLR = !changeLR
+    foeHP = foe.hp + foe.armor
+  
+  ?timer = DEFAULT_FRAME &
+  ^foeHP > 0
+    ?(foe.hp + foe.armor) < foeHP
+      DEFAULT_FRAME--
+    :
+      DEFAULT_FRAME++
+      ?DEFAULT_FRAME > 35
+        DEFAULT_FRAME = 35
+  ?debug = true
+    >`0,5,TIMER@timer@ DEFAULT_FRAME@DEFAULT_FRAME@ changeLR@changeLR@
+    >`0,6,@(foe.hp + foe.armor)@ foeHP@foeHP@ @(foe.hp + foe.armor) < foeHP@
+    >`0,7,L:@item.left@
+    >`0,8,R:@item.right@
+dpsChecker()
+AAC(
+  ^＂sword vigor D *10 +21＂,
+  ^＂sword vigor D *10 +20＂
+^)
