@@ -133,13 +133,9 @@ func useShield(shield)
   ?item.GetCooldown(shield) <= 0
     equipL sword Vigor
     equipR @shield@
-    ?item.CanActivate()
-      activate R
-      return true
-    :
-      return false
+    return true
   :
-  return false
+    return false
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -564,6 +560,8 @@ func levelMine(healLO)
         var dashUsed = useShield(dash)
         ?dashUsed = false
           useShield(bash)
+    :
+      debuffAtk()
     // 躲锤子
     ?foe.state = 32
       ?foe.time >= 32
