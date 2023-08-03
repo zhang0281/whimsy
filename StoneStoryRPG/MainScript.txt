@@ -7,7 +7,8 @@ import UI/BetterInfo2
 
 /** 预设变量 **/
 ?loc.begin
-  var dpsChecker = new StoneStoryRPG/scripts/dpsChecker
+  var dpsChecker = 
+  ^new StoneStoryRPG/scripts/dpsChecker
   var cdInfo = new StoneStoryRPG/scripts/cdInfo
   var util = new StoneStoryRPG/scripts/util
 
@@ -88,7 +89,7 @@ func showInfo()
       ^空瓶子
   :
     var potionNameAtIP = 
-      ^string.IndexOf(item.potion, "药水") - 2
+      ^string.IndexOf(item.potion, ＂药水＂) - 2
     var potionName = string.Sub(
       ^item.potion, potionNameAtIP, 4
     ^)
@@ -127,12 +128,18 @@ func AAC2H(item2H)
     equip @item2H@
 /** 使用指定盾牌 **/
 func useShield(shield)
-  ?debug = true
-    >c-42,8,@shield@ @item.GetCooldown(shield)@ @item.CanActivate(shield)@
-  ?item.GetCooldown(shield) = -1
+  // ?debug = true
+  >`0,10,@shield@ @item.GetCooldown(shield)@ @item.CanActivate(shield)@
+  ?item.GetCooldown(shield) <= 0
+    equipL sword Vigor
     equipR @shield@
-    ?item.CanActivate(shield)
+    ?item.CanActivate()
       activate R
+      return true
+    :
+      return false
+  :
+  return false
 /** 使用骷髅手臂
  *  在骷髅手臂可用,
  *  可以使用技能秒杀怪物
@@ -415,7 +422,6 @@ func levelRocky()
     ?foe.state = 107
       equipL wand ice *10 +21
       equipR wand Vigor *10 +21
-  useShield(bash)
   ?hp <= maxhp * LOW_HP_PERSENT
     AAC1H(
       ^＂socketed_sword Vigor dL *10 +21＂,
@@ -554,6 +560,10 @@ func levelMine(healLO)
             ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +21＂,
             ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +20＂
           ^)
+      ?foe.distance >= 10
+        var dashUsed = useShield(dash)
+        ?dashUsed = false
+          useShield(bash)
     // 躲锤子
     ?foe.state = 32
       ?foe.time >= 32
@@ -578,8 +588,11 @@ func levelIcy(healLO)
     ^＂socketed_long_sword Fire D *10 +20＂
   ^)
   ?foe ! ice_wall
-    ?foe ! boss
-      useShield(bash)
+    ?foe ! boss &
+    ^foe.distance >= 10
+      var dashUsed = useShield(dash)
+      ?dashUsed = false
+        useShield(bash)
     debuffAtk()
   ?foe ! ice_pillar
     loopHealHP(healLO)

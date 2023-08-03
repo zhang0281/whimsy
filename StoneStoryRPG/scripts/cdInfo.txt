@@ -15,14 +15,19 @@ asciiend
   
 /** 显示指定道具的冷却时间 **/
 func getItemIsCanUse(posX, posY, itemStr)
-  ?item.GetCooldown(itemStr) <=0
+  ?item.GetCooldown(itemStr) <= 0
     >`@posX@,@posY@,
       ^@util.getColor(true)@,
       ^RDY
-  :
+  :?item.GetCooldown(itemStr) > 99
     >`@posX@,@posY@,
       ^@util.getColor(false)@,
       ^@item.GetCooldown(itemStr) / 30@s
+  :
+    >`@posX@,@posY@,
+      ^@util.getColor(false)@,
+      ^@item.GetCooldown(itemStr)@f
+  
 /** 显示CD相关信息 **/
 func showCDWindow(posX, posY)
   >`@posX@,@posY@,#347FC4,@cdWindow@
