@@ -383,9 +383,10 @@ func runFast()
     equipR shield ah
 
 /** 岩石高地
-*  自动铲石头
+ *  自动铲石头
+ *  useShovel: 是否采集石头
 **/
-func levelRocky()
+func levelRocky(useShovel)
   ?loc ! rocky
     return false
   AAC1H(
@@ -393,9 +394,10 @@ func levelRocky()
     ^＂socketed_sword ＂+util.getWeakness()+＂ D *10 +20＂
   ^)
   // // 自动铲石头
-  // ?harvest = Boulder &
-  // ^harvest.distance < 30
-  //   equip shovel
+  ?harvest = Boulder &
+  ^harvest.distance < 30 &
+  ^useShovel
+    equip shovel
   
   ?foe.buffs.string
     adaptiveDef = foe.buffs.string
@@ -461,9 +463,10 @@ func levelRocky()
     equipL mind stone
 /** 枯木峡谷
 *  自动砍树
+*  useHatchet: 是否砍树
 *  healLO: 治疗Loadout
 **/
-func levelDeadwood(healLO)
+func levelDeadwood(useHatchet, healLO)
   ?loc ! deadwood
     return false
   AAC1H(
@@ -479,8 +482,8 @@ func levelDeadwood(healLO)
       ^＂socketed_sword Vigor dL *10 +20＂
     ^)
   // // 自动砍树
-  // ?harvest = Tree
-  //   equip hatchet
+  ?harvest = Tree & useHatchet
+    equip hatchet
   ?foe = wasp
     equipL wand ice
     equipR shield ah
@@ -660,8 +663,8 @@ func wildRide()
     :?pos.x = 255
       >o0,-2,hint: 打断 ,布洛希
 /** 执行对应关卡的策略 **/
-levelRocky()
-levelDeadwood(HEAL_LO)
+levelRocky(false)
+levelDeadwood(false, HEAL_LO)
 levelCaves(MAIN_LO,HEAL_LO)
 levelForest(MAIN_LO,HEAL_LO)
 levelHalls(MAIN_LO,HEAL_LO)
