@@ -369,7 +369,15 @@ func autoPickup()
     equipR shield ah
 /** 血量小于7喝药 **/
 func autoPotion()
-  ?hp <= maxhp*0.3
+  ?item.potion = empty
+    return false
+  var potionNameAtIP = 
+    ^string.IndexOf(item.potion, ＂药水＂) - 2
+  var potionName = string.Sub(
+    ^item.potion, potionNameAtIP, 4
+  ^)
+  ?hp <= maxhp*0.3 &
+  ^potionName = ＂恢复药水＂
     activate potion
 /** 加速
  *  在离怪物,可拾取物,可收获物
@@ -381,7 +389,25 @@ func runFast()
   ^ harvest.distance >= 20
     equipL triskelion stone
     equipR shield ah
-
+func brewPotion()
+  /*
+  stone 石头, wood 木头,bronze 青铜,tar 焦油
+  恢复药水 (生命+=最大生命值)                      油
+  防御药水 (生命+=0.5*最大生命值|护甲+=最大生命值)  石+油
+  净化药水 (生命+=0.5*最大生命值|-全部负面效果)     木+油
+  吸血药水 (20s|生命+=伤害值*0.2)                 铜+油
+  怪力药水 (10s|攻击眩晕|护甲伤害x3)               石
+  隐形药水 (15s|100% 躲避)                        石+木
+  幸运药水 (6s|100% 暴击)                         石+铜
+  狂暴药水 (10s|+15 攻速)                         木+铜
+  闪电药水 (所有敌人150伤害)                       铜
+  经验药水 (30s|1经验&amp;钱/击杀)                 木
+  */
+  ?loc.begin
+    ?loc = mine
+      brew stone
+    :
+      brew tar
 /** 岩石高地
  *  自动铲石头
  *  useShovel: 是否采集石头
@@ -576,6 +602,14 @@ func levelMine(healLO)
   debuffAtk()
   ?foe = boss
     ?foe = guardian
+      ?item.potion ! empty
+        var potionNameAtIP = 
+          ^string.IndexOf(item.potion, ＂药水＂) - 2
+        var potionName = string.Sub(
+          ^item.potion, potionNameAtIP, 4
+        ^)
+        ?potionName = ＂怪力药水＂
+        activate potion
       equip Crossbow AEther D *10 +21
     //贴身攻击
     ?foe.state = 33 &
@@ -662,6 +696,8 @@ func wildRide()
       >o0,-3,hint: 悄悄话,200多个
     :?pos.x = 255
       >o0,-2,hint: 打断 ,布洛希
+// 酿造药水
+brewPotion()
 /** 执行对应关卡的策略 **/
 levelRocky(false)
 levelDeadwood(false, HEAL_LO)
