@@ -109,15 +109,15 @@ def export_vs_vfx_png_file(file_folder: str, file_name: str):
     Application(backend="uia").start('.\\net6.0\\UABEAvalonia.exe')
     # 连接应用程序
     app = Application(backend="uia").connect(path="UABEAvalonia.exe", title="UABEA")
-    appwin32 = Application(backend="win32").connect(path="UABEAvalonia.exe", title="UABEA")
+    app_win32 = Application(backend="win32").connect(path="UABEAvalonia.exe", title="UABEA")
     # 获取窗口
-    UABEA = app.window(title="UABEA")
+    uabea = app.window(title="UABEA")
     # 等待加载完成
-    UABEA.wait('ready')
+    uabea.wait('ready')
     # 点击File->Open Ctrl+O
-    UABEA.type_keys("^O")
+    uabea.type_keys("^O")
     # 获取打开文件对话框
-    open_vfx_dialog = appwin32.window(title="Open assets or bundle file")
+    open_vfx_dialog = app_win32.window(title="Open assets or bundle file")
     # 输入路径
     open_vfx_dialog.wait('ready')
     open_vfx_dialog.Edit.set_text(resources_path)
@@ -137,7 +137,7 @@ def export_vs_vfx_png_file(file_folder: str, file_name: str):
     plugins.ListBox['Export texture'].select()
     plugins.OkButton.click()
     # 获取保存vfx对话框
-    save_vfx_dialog = appwin32.window(title="Save texture")
+    save_vfx_dialog = app_win32.window(title="Save texture")
     # 输入路径
     print(os.path.join(os.getcwd(), vs_vfx_name))
     save_vfx_dialog.Edit.set_text(os.path.join(os.getcwd(), vs_vfx_name))
@@ -145,7 +145,7 @@ def export_vs_vfx_png_file(file_folder: str, file_name: str):
     # 点击 保存 按钮
     save_vfx_dialog.Button.click()
     try:
-        appwin32['确认另存为'].type_keys("%Y")
+        app_win32['确认另存为'].type_keys("%Y")
     except pywinauto.findwindows.ElementNotFoundError as Err:
         pass
     except pywinauto.findbestmatch.MatchError as Err:
@@ -179,7 +179,7 @@ def edit_img_alpha(file_folder: str, file_name: str, alpha: float):
 def import_vs_vfx_png_file(vfx_path: str):
     # 连接应用程序
     app = Application(backend="uia").connect(path="UABEAvalonia.exe", title="UABEA")
-    appwin32 = Application(backend="win32").connect(path="UABEAvalonia.exe", title="UABEA")
+    app_win32 = Application(backend="win32").connect(path="UABEAvalonia.exe", title="UABEA")
     # 获取资源列表对话框并且唤起搜索
     assets_info = app.window(title="Assets Info")
     time.sleep(0.5)
@@ -190,7 +190,7 @@ def import_vs_vfx_png_file(vfx_path: str):
     texture_edit = assets_info.window(title="Texture Edit")
     texture_edit.Load.click()
     # 获取打开文件对话框
-    open_texture_dialog = appwin32.window(title="Open texture")
+    open_texture_dialog = app_win32.window(title="Open texture")
     # 输入路径
     open_texture_dialog.Edit.set_text(vfx_path)
     # 点击 打开 按钮
@@ -221,6 +221,7 @@ def main():
     :return: None
     """
     root = tk.Tk()
+    root.withdraw()
     steam_path = get_steam_install_folder()
     if steam_path is None:
         print('ERROR: Steam path not found.')
@@ -241,6 +242,8 @@ def main():
     import_vs_vfx_png_file(vfx_path=os.path.join(os.getcwd(), vs_vfx_name))
 
     tk.messagebox.showinfo('成功', '已成功将vfx.png的透明度设置为{alpha}%'.format(alpha=alpha * 100))
+
+    root.destroy()
 
 
 if __name__ == '__main__':
