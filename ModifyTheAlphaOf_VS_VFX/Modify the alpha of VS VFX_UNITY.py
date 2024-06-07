@@ -1,13 +1,13 @@
 import os
+import shutil
 import time
+import tkinter as tk
 import winreg
-from tkinter import simpledialog, messagebox
+from tkinter import messagebox, simpledialog
 
 import pywinauto
 import vdf
 from PIL import Image
-import shutil
-
 from pywinauto import Application
 
 # steam注册表所在位置
@@ -201,14 +201,14 @@ def import_vs_vfx_png_file(vfx_path: str):
     assets_info.type_keys("%W")
 
 
-def input_alpha() -> float:
+def input_alpha(parent_window: tk.Tk) -> float:
     """
     输入透明度
     :return: None
     """
     alpha = simpledialog.askfloat('吸血鬼幸存者特效贴图透明度修改工具',
                                   prompt='需要更改的透明度？(0到1之间的小数)',
-                                  initialvalue=0.3, minvalue=0, maxvalue=1)
+                                  initialvalue=0.3, minvalue=0, maxvalue=1, parent=parent_window)
     if alpha is None:
         messagebox.showerror(title='错误', message='需要输入一个数字.')
         exit(1)
@@ -220,6 +220,7 @@ def main():
     主函数
     :return: None
     """
+    root = tk.Tk()
     steam_path = get_steam_install_folder()
     if steam_path is None:
         print('ERROR: Steam path not found.')
@@ -230,7 +231,7 @@ def main():
         print('ERROR: Vampire Survivors not installed.')
         return
 
-    alpha = input_alpha()
+    alpha = input_alpha(parent_window=root)
 
     export_vs_vfx_png_file(file_folder=os.path.join(vampire_survivors_folder, vs_resources_folder),
                            file_name=vs_resources_name)
@@ -239,7 +240,7 @@ def main():
 
     import_vs_vfx_png_file(vfx_path=os.path.join(os.getcwd(), vs_vfx_name))
 
-    messagebox.showinfo('成功', '已成功将vfx.png的透明度设置为{alpha}%'.format(alpha=alpha * 100))
+    tk.messagebox.showinfo('成功', '已成功将vfx.png的透明度设置为{alpha}%'.format(alpha=alpha * 100))
 
 
 if __name__ == '__main__':

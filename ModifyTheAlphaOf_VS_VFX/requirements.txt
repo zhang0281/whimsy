@@ -1,2 +1,4 @@
+# 需要python3.7.9
+pywinauto~=0.6.8
 vdf~=3.4
-Pillow~=9.3.0
+pillow~=9.5.0
