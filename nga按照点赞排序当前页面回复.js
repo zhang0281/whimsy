@@ -13,6 +13,6 @@ for (let i in recommendvalueList) {
 sortList.sort((start, next) => {
     return next.recommendvalue - start.recommendvalue
 })
-sortList.map(e=>{
-    console.log("推荐值：",e.recommendvalue,e.recommendvalueDOM)
+sortList.map(e => {
+    console.log("推荐值：", e.recommendvalue, e.recommendvalueDOM)
 })
