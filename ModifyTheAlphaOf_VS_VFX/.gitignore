@@ -1,1 +1,4 @@
-vfx.png
+*.png
+*.log
+venv
+.idea

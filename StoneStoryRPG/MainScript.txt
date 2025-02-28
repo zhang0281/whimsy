@@ -424,6 +424,7 @@ func levelRocky(useShovel)
   ^harvest.distance < 30 &
   ^useShovel
     equip shovel
+    return true
   
   ?foe.buffs.string
     adaptiveDef = foe.buffs.string
@@ -699,7 +700,7 @@ func wildRide()
 // 酿造药水
 brewPotion()
 /** 执行对应关卡的策略 **/
-levelRocky(false)
+levelRocky(true)
 levelDeadwood(false, HEAL_LO)
 levelCaves(MAIN_LO,HEAL_LO)
 levelForest(MAIN_LO,HEAL_LO)

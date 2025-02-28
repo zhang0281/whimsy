@@ -2,248 +2,222 @@ import os
 import shutil
 import time
 import tkinter as tk
+import traceback
 import winreg
+from dataclasses import dataclass
 from tkinter import messagebox, simpledialog
+from typing import List, Optional
 
 import pywinauto
 import vdf
 from PIL import Image
 from pywinauto import Application
 
-# steam注册表所在位置
-steam32key = r'SOFTWARE\Valve\Steam'
-steam64key = r'SOFTWARE\Wow6432Node\Valve\Steam'
-# 用于存储steam库目录的文件
-steamLibraryVdfPath = r'steamapps\libraryfolders.vdf'
-# 吸血鬼幸存者steam id
-vampire_survivors_steam_id = r'1794680'
-# vfx.png相关信息
-vs_resources_folder = r'VampireSurvivors_Data'
-vs_resources_name = 'resources.assets'
-vs_vfx_name = 'vfx.png'
+
+@dataclass
+class AssetInfo:
+    folder: str
+    file_name: str
+    texture_name: str
+    asset_path: str
+    is_bundle: bool = False
+
+    def get_full_path(self, base_path: str) -> str:
+        return os.path.join(base_path, self.folder, self.file_name)
 
 
-def get_steam_install_folder_by_registry(key: int, sub_key: str, find_key_name: str = 'InstallPath') -> str or None:
-    """
-    查找指定注册表键的值。
-    :param key: 主键
-    :param sub_key: 自键
-    :param find_key_name: 要查找的Key
-    :return: steam的安装路径
-    """
-    key = winreg.OpenKey(key, sub_key)
-    i = 0
-    result = None
-    while True:
+class SteamPathFinder:
+    STEAM_32_KEY = r'SOFTWARE\Valve\Steam'
+    STEAM_64_KEY = r'SOFTWARE\Wow6432Node\Valve\Steam'
+    LIBRARY_VDF_PATH = r'steamapps\libraryfolders.vdf'
+    VS_STEAM_ID = '1794680'
+
+    @staticmethod
+    def get_registry_value(key: int, sub_key: str, find_key_name: str = 'InstallPath') -> Optional[str]:
+        key_handle = winreg.OpenKey(key, sub_key)
+        i = 0
+        result = None
+        while True:
+            try:
+                enum = winreg.EnumValue(key_handle, i)
+                if enum[0] == find_key_name:
+                    result = enum[1]
+                i += 1
+            except OSError:
+                winreg.CloseKey(key_handle)
+                break
+        return result
+
+    @classmethod
+    def get_steam_path(cls) -> Optional[str]:
+        steam_path = cls.get_registry_value(winreg.HKEY_LOCAL_MACHINE, cls.STEAM_32_KEY)
+        if steam_path is None:
+            steam_path = cls.get_registry_value(winreg.HKEY_LOCAL_MACHINE, cls.STEAM_64_KEY)
+        return steam_path
+
+    @classmethod
+    def get_vs_path(cls, steam_folder: str) -> Optional[str]:
+        library_vdf = vdf.load(open(os.path.join(steam_folder, cls.LIBRARY_VDF_PATH)))
+        for value in library_vdf.get('libraryfolders').values():
+            if cls.VS_STEAM_ID in value.get('apps'):
+                result = os.path.join(value.get('path'), 'steamapps')
+                vs_acf = vdf.load(open(
+                    os.path.join(result, f'appmanifest_{cls.VS_STEAM_ID}.acf')))
+                return os.path.join(result, 'common', vs_acf.get('AppState').get('installdir'))
+        return None
+
+
+class UABEAManager:
+    def __init__(self):
+        self.app = None
+        self.app_win32 = None
+        self.assets_info = None
+
+    def start(self):
+        Application(backend="uia").start('.\\UABE\\UABEAvalonia.exe')
+        self.app = Application(backend="uia").connect(path="UABEAvalonia.exe", title="UABEA")
+        self.app_win32 = Application(backend="win32").connect(path="UABEAvalonia.exe", title="UABEA")
+
+    def open_file(self, file_path: str):
+        uabea = self.app.window(title="UABEA")
+        uabea.wait('ready')
+        uabea.type_keys("^O")
+
+        open_dialog = self.app_win32.window(title="Open assets or bundle file")
+        open_dialog.wait('ready')
+        open_dialog.Edit.set_text(file_path)
+        time.sleep(0.5)
+        open_dialog.Button.click()
+
         try:
-            # 获取注册表对应位置的键和值
-            enum = winreg.EnumValue(key, i)
-            if enum[0] == find_key_name:
-                result = enum[1]
-            i += 1
-        except OSError:
-            winreg.CloseKey(key)
-            break
-    return result
+            uabea.window(title="Message Box").MemoryButton.click()
+            uabea.info.click()
+        except (pywinauto.findwindows.ElementNotFoundError, pywinauto.findbestmatch.MatchError) as err:
+            print(f"Warning: {err}")
+
+        self.assets_info = self.app.window(title="Assets Info")
+
+    def export_texture(self, texture_name: str, output_path: str):
+        self.assets_info.type_keys("^F")
+        search = self.assets_info.window(title="Search")
+        search.Edit.set_text(texture_name)
+        search.Ok.click()
+
+        self.assets_info.Plugins.click()
+        plugins = self.assets_info.child_window(title="Plugins", control_type="Window")
+        plugins.ListBox['Export texture'].select()
+        plugins.OkButton.click()
+
+        save_dialog = self.app_win32.window(title="Save texture")
+        print(output_path)
+        save_dialog.Edit.set_text(output_path)
+        time.sleep(0.5)
+        save_dialog.Button.click()
+
+        try:
+            self.app_win32['确认另存为'].type_keys("%Y")
+        except (pywinauto.findwindows.ElementNotFoundError, pywinauto.findbestmatch.MatchError) as err:
+            print(f"Warning: {err}")
+
+        time.sleep(0.025)
+
+    def import_texture(self, texture_path: str):
+        time.sleep(0.5)
+        self.assets_info.Plugins.click()
+        plugins = self.assets_info.child_window(title="Plugins", control_type="Window")
+        plugins.ListBox['Edit texture'].select()
+        plugins.OkButton.click()
+
+        texture_edit = self.assets_info.window(title="Texture Edit")
+        texture_edit.Load.click()
+
+        open_dialog = self.app_win32.window(title="Open texture")
+        open_dialog.Edit.set_text(texture_path)
+        open_dialog.Button.click()
+
+        texture_edit.Save.click()
+        time.sleep(0.3)
+        self.assets_info.type_keys("^S")
+        time.sleep(0.3)
+        self.assets_info.type_keys("^W")
 
 
-def get_steam_install_folder() -> str or None:
-    """
-    获取steam安装路径。
-    :return: steam 安装路径。
-    """
-    steam_path = get_steam_install_folder_by_registry(winreg.HKEY_LOCAL_MACHINE, steam32key)
-    if steam_path is None:
-        steam_path = get_steam_install_folder_by_registry(winreg.HKEY_LOCAL_MACHINE, steam64key)
-    return steam_path
+class TextureModifier:
+    @staticmethod
+    def modify_alpha(image_path: str, alpha: float):
+        img = Image.open(image_path)
+        img = img.convert('RGBA')
+        x, y = img.size
+
+        for x_num in range(x):
+            for y_num in range(y):
+                color = img.getpixel((x_num, y_num))
+                if color[3] != 0:
+                    color = color[:-1] + (int(color[3] * alpha),)
+                    img.putpixel((x_num, y_num), color)
+        img.save(image_path)
 
 
-def get_vampire_survivors_folder(steam_folder: str) -> str or None:
-    """
-    获取Vampire Survivors的安装路径。
-    :param steam_folder: Vampire Survivors安装路径
-    :return:
-    """
-    result = None
-    library_vdf = vdf.load(open(os.path.join(steam_folder, steamLibraryVdfPath)))
-    for value in library_vdf.get('libraryfolders').values():
-        if vampire_survivors_steam_id in value.get('apps'):
-            result = os.path.join(value.get('path'), 'steamapps')
+class VFXModifier:
+    def __init__(self):
+        self.assets: List[AssetInfo] = [
+            AssetInfo('VampireSurvivors_Data', 'resources.assets', 'vfx', 'vfx.png'),
+            AssetInfo('2887680', 'firstblood_persistent_assets_all.bundle', 'FirstBlood', 'FirstBlood.png', True),
+            AssetInfo('3210350', 'thosepeople_persistent_assets_all.bundle', 'ThosePeople', 'ThosePeople.png', True),
+            AssetInfo('2690330', 'chalcedony_persistent_assets_all.bundle', 'chalcedony', 'chalcedony.png', True)
+        ]
+        self.uabea = UABEAManager()
 
-            vampire_survivors_acf = vdf.load(open(
-                os.path.join(result, 'appmanifest_{vs_steam_id}.acf'.format(vs_steam_id=vampire_survivors_steam_id))))
-            result = os.path.join(result, 'common', vampire_survivors_acf.get('AppState').get('installdir'))
+    def modify_texture(self, vs_folder: str, asset: AssetInfo, alpha: float):
+        texture_path = os.path.join(os.getcwd(), asset.asset_path)
+        if os.path.exists(texture_path):
+            os.remove(texture_path)
 
-    return result
+        self.uabea.start()
+        self.uabea.open_file(asset.get_full_path(vs_folder))
+        self.uabea.export_texture(asset.texture_name, texture_path)
 
+        TextureModifier.modify_alpha(texture_path, alpha)
 
-def backup_file(file_folder: str, file_name: str):
-    """
-    根据路径和文件名备份指定的文件，并且在已经备份的情况下读取备份完毕的文件
-    :param file_folder: 文件路径
-    :param file_name: 文件名
-    :return: 备份后的文件
-    """
-    file_full_path = os.path.join(file_folder, file_name)
+        self.uabea.import_texture(texture_path)
 
-    if os.path.exists(file_full_path):
-        file_name, file_extension = os.path.splitext(file_full_path)
-        backup_file_path = f"{file_name}_old{file_extension}"
-        if not os.path.exists(backup_file_path):
-            shutil.copy(file_full_path, backup_file_path)
-            print(f"文件备份成功，备份文件名为：{backup_file_path}")
-    return file_full_path
+    def run(self):
+        root = tk.Tk()
+        root.withdraw()
 
+        steam_path = SteamPathFinder.get_steam_path()
+        if steam_path is None:
+            messagebox.showerror('错误', '未找到Steam安装路径')
+            return
 
-def export_vs_vfx_png_file(file_folder: str, file_name: str):
-    """
-    自动使用UABEA导出vfx.png
-    :return: Null
-    """
-    if os.path.exists(os.path.join(os.getcwd(), vs_vfx_name)):
-        os.remove(os.path.join(os.getcwd(), vs_vfx_name))
+        vs_folder = SteamPathFinder.get_vs_path(steam_path)
+        if vs_folder is None:
+            messagebox.showerror('错误', '未找到吸血鬼幸存者安装路径')
+            return
 
-    # # 备份resources.assets
-    resources_path = backup_file(file_folder, file_name)
-    # 打开UABE
-    Application(backend="uia").start('.\\net6.0\\UABEAvalonia.exe')
-    # 连接应用程序
-    app = Application(backend="uia").connect(path="UABEAvalonia.exe", title="UABEA")
-    app_win32 = Application(backend="win32").connect(path="UABEAvalonia.exe", title="UABEA")
-    # 获取窗口
-    uabea = app.window(title="UABEA")
-    # 等待加载完成
-    uabea.wait('ready')
-    # 点击File->Open Ctrl+O
-    uabea.type_keys("^O")
-    # 获取打开文件对话框
-    open_vfx_dialog = app_win32.window(title="Open assets or bundle file")
-    # 输入路径
-    open_vfx_dialog.wait('ready')
-    open_vfx_dialog.Edit.set_text(resources_path)
-    time.sleep(0.5)
-    # 点击 打开 按钮
-    open_vfx_dialog.Button.click()
-    # 获取资源列表对话框并且唤起搜索
-    assets_info = app.window(title="Assets Info")
-    assets_info.type_keys("^F")
-    # 搜索vfx
-    search = assets_info.window(title="Search")
-    search.Edit.set_text(vs_vfx_name[:-4])
-    search.Ok.click()
-    # 导出vfx
-    assets_info.Plugins.click()
-    plugins = assets_info.child_window(title="Plugins", control_type="Window")
-    plugins.ListBox['Export texture'].select()
-    plugins.OkButton.click()
-    # 获取保存vfx对话框
-    save_vfx_dialog = app_win32.window(title="Save texture")
-    # 输入路径
-    print(os.path.join(os.getcwd(), vs_vfx_name))
-    save_vfx_dialog.Edit.set_text(os.path.join(os.getcwd(), vs_vfx_name))
-    time.sleep(0.5)
-    # 点击 保存 按钮
-    save_vfx_dialog.Button.click()
-    try:
-        app_win32['确认另存为'].type_keys("%Y")
-    except pywinauto.findwindows.ElementNotFoundError as Err:
-        pass
-    except pywinauto.findbestmatch.MatchError as Err:
-        pass
-    time.sleep(0.025)
+        alpha = simpledialog.askfloat('吸血鬼幸存者特效贴图透明度修改工具',
+                                      prompt='需要更改的透明度？(0到1之间的小数)',
+                                      initialvalue=0.3, minvalue=0, maxvalue=1, parent=root)
+        if alpha is None:
+            messagebox.showerror('错误', '需要输入一个数字')
+            return
 
+        try:
+            for asset in self.assets:
+                if os.path.exists(asset.get_full_path(vs_folder)):
+                    self.modify_texture(vs_folder, asset, alpha)
 
-def edit_img_alpha(file_folder: str, file_name: str, alpha: float):
-    """
-    根据alpha修改指定图片的透明度。
-    :param file_folder: 文件路径
-    :param file_name: 文件名称
-    :param alpha: 将透明度修改为指定值(0~1)。
-    :return: None
-    """
-    file_full_path = os.path.join(file_folder, file_name)
-    img = Image.open(file_full_path)
-
-    img = img.convert('RGBA')
-    x, y = img.size
-
-    for x_num in range(x):
-        for y_num in range(y):
-            color = img.getpixel((x_num, y_num))
-            if color[3] != 0:
-                color = color[:-1] + (int(color[3] * alpha),)
-                img.putpixel((x_num, y_num), color)
-    img.save(file_full_path)
-
-
-def import_vs_vfx_png_file(vfx_path: str):
-    # 连接应用程序
-    app = Application(backend="uia").connect(path="UABEAvalonia.exe", title="UABEA")
-    app_win32 = Application(backend="win32").connect(path="UABEAvalonia.exe", title="UABEA")
-    # 获取资源列表对话框并且唤起搜索
-    assets_info = app.window(title="Assets Info")
-    time.sleep(0.5)
-    assets_info.Plugins.click()
-    plugins = assets_info.child_window(title="Plugins", control_type="Window")
-    plugins.ListBox['Edit texture'].select()
-    plugins.OkButton.click()
-    texture_edit = assets_info.window(title="Texture Edit")
-    texture_edit.Load.click()
-    # 获取打开文件对话框
-    open_texture_dialog = app_win32.window(title="Open texture")
-    # 输入路径
-    open_texture_dialog.Edit.set_text(vfx_path)
-    # 点击 打开 按钮
-    open_texture_dialog.Button.click()
-
-    texture_edit.Save.click()
-    time.sleep(0.5)
-    assets_info.type_keys("%W")
-
-
-def input_alpha(parent_window: tk.Tk) -> float:
-    """
-    输入透明度
-    :return: None
-    """
-    alpha = simpledialog.askfloat('吸血鬼幸存者特效贴图透明度修改工具',
-                                  prompt='需要更改的透明度？(0到1之间的小数)',
-                                  initialvalue=0.3, minvalue=0, maxvalue=1, parent=parent_window)
-    if alpha is None:
-        messagebox.showerror(title='错误', message='需要输入一个数字.')
-        exit(1)
-    return alpha
+            messagebox.showinfo('成功', f'已成功将所有特效贴图的透明度设置为{alpha * 100}%')
+        except Exception as e:
+            traceback.print_exc()
+            messagebox.showerror('错误', f'修改过程中发生错误: {str(e)}')
+        finally:
+            root.destroy()
 
 
 def main():
-    """
-    主函数
-    :return: None
-    """
-    root = tk.Tk()
-    root.withdraw()
-    steam_path = get_steam_install_folder()
-    if steam_path is None:
-        print('ERROR: Steam path not found.')
-        return
-
-    vampire_survivors_folder = get_vampire_survivors_folder(steam_path)
-    if vampire_survivors_folder is None:
-        print('ERROR: Vampire Survivors not installed.')
-        return
-
-    alpha = input_alpha(parent_window=root)
-
-    export_vs_vfx_png_file(file_folder=os.path.join(vampire_survivors_folder, vs_resources_folder),
-                           file_name=vs_resources_name)
-
-    edit_img_alpha(file_folder=os.getcwd(), file_name=vs_vfx_name, alpha=alpha)
-
-    import_vs_vfx_png_file(vfx_path=os.path.join(os.getcwd(), vs_vfx_name))
-
-    tk.messagebox.showinfo('成功', '已成功将vfx.png的透明度设置为{alpha}%'.format(alpha=alpha * 100))
-
-    root.destroy()
+    modifier = VFXModifier()
+    modifier.run()
 
 
 if __name__ == '__main__':
