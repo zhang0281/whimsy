@@ -1,0 +1,13 @@
+http_proxy=127.0.0.1:7890 https_proxy=127.0.0.1:7890 curl -v https://www.google.com
+
+
+http_proxy=zhang:zhang20250409@host.docker.internal:7890 https_proxy=zhang:zhang20250409@host.docker.internal:7890 curl -v https://www.google.com
+
+http_proxy=zhang:zhang20250409@127.0.0.1:7890 https_proxy=zhang:zhang20250409@127.0.0.1:7890 curl -v https://www.google.com
+
+http_proxy=172.17.0.1:7890 https_proxy=172.17.0.1:7890 curl -v https://www.google.com
+
+
+sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+apt update
+apt install dnsutils inetutils-ping telnet -y 

@@ -1,0 +1,40 @@
+{
+  "mcpServers": {
+    "Playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "Sequential thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "Context 7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ]
+    },
+    "mcp-feedback-enhanced": {
+      "command": "uvx",
+      "args": [
+        "mcp-feedback-enhanced@latest"
+      ],
+      "timeout": 600,
+      "env": {
+        "MCP_DESKTOP_MODE": "true",
+        "MCP_WEB_PORT": "8765",
+        "MCP_DEBUG": "false"
+      },
+      "autoApprove": [
+        "interactive_feedback"
+      ]
+    }
+  }
+}
