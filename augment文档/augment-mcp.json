@@ -35,6 +35,22 @@
       "autoApprove": [
         "interactive_feedback"
       ]
+    },
+    "shrimp-task-manager": {
+      "command": "npx",
+      "args": ["-y", "mcp-shrimp-task-manager"],
+      "env": {
+        "DATA_DIR": "mcp-shrimp-task-manager/data",
+        "TEMPLATES_USE": "zh",
+        "ENABLE_GUI": "false"
+      }
+    },
+    "DeepWiki": {
+      "args": [
+        "mcp-remote",
+        "https://mcp.deepwiki.com/sse"
+      ],
+      "command": "npx"
     }
   }
 }
